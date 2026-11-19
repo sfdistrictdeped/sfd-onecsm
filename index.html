@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#131c29">
+
+  <title>San Fernando District OneCSM</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <main class="app-shell">
+    <div class="accent-bar"></div>
+
+    <section class="main-content">
+      <img
+        class="district-logo"
+        src="assets/logos/district-logo.png"
+        alt="San Fernando District, Division of Masbate logo"
+      >
+
+      <div class="office-label">San Fernando District Office</div>
+
+      <h1>Welcome to the San Fernando District OneCSM System</h1>
+
+      <p class="intro">
+        Your feedback matters to us. Help us improve the quality,
+        efficiency, and responsiveness of our public services through
+        your participation in the Client Satisfaction Measurement.
+      </p>
+
+      <section class="privacy-panel" aria-labelledby="privacyTitle">
+        <h2 class="privacy-heading" id="privacyTitle">
+          <span class="privacy-icon" aria-hidden="true">✓</span>
+          Data Privacy Notice
+        </h2>
+
+        <p>
+          The San Fernando District Office collects information through
+          this system to process your Certificate of Appearance and
+          administer the Client Satisfaction Measurement (CSM).
+        </p>
+
+        <p>
+          Information submitted through this system will be used for
+          these purposes and handled by authorized personnel in
+          accordance with applicable data protection requirements.
+        </p>
+
+        <p>
+          Participation in the satisfaction survey is voluntary.
+          You may leave optional questions unanswered. Your feedback
+          will help the office assess and improve its services.
+        </p>
+
+        <p>
+          Before this system is placed into public service, the office's
+          official privacy contact, data-retention period, and
+          information about your data-subject rights must be provided
+          in the approved privacy notice.
+        </p>
+      </section>
+
+      <label class="consent-row" for="consentCheckbox">
+        <input
+          type="checkbox"
+          id="consentCheckbox"
+          onchange="updateProceedButton()"
+        >
+        <span>
+          I have read and understood the Data Privacy Notice. I
+          voluntarily consent to the collection and processing of my
+          information for the purposes stated above.
+        </span>
+      </label>
+
+      <button
+        type="button"
+        id="proceedButton"
+        class="proceed-button"
+        disabled
+        onclick="proceedToAppearance()"
+      >
+        Proceed <span class="button-arrow" aria-hidden="true">→</span>
+      </button>
+
+      <p class="button-hint" id="buttonHint">
+        Please read the notice and provide your consent to continue.
+      </p>
+
+      <div class="notice" id="developmentNotice" role="status"></div>
+    </section>
+
+    <footer class="footer">
+      <p class="footer-label">Department of Education · Institutional Logos</p>
+
+      <div class="partner-logos">
+        <div class="partner-logo">
+          <img src="assets/logos/deped-logo.webp" alt="Department of Education logo">
+        </div>
+
+        <div class="partner-logo">
+          <img src="assets/logos/region-v-logo.png" alt="DepEd Region V Bicol logo">
+        </div>
+
+        <div class="partner-logo">
+          <img src="assets/logos/sdo-masbate-logo.png" alt="Schools Division Office of Masbate logo">
+        </div>
+
+        <div class="partner-logo">
+          <img src="assets/logos/district-logo.png" alt="San Fernando District logo">
+        </div>
+      </div>
+
+      <p class="footer-caption">
+        SAN FERNANDO DISTRICT OFFICE · DIVISION OF MASBATE
+      </p>
+    </footer>
+  </main>
+  <script src="js/app.js"></script>
+</body>
+</html>
