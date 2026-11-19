@@ -92,7 +92,7 @@
       <div class="notice" id="developmentNotice" role="status"></div>
 
       <section class="workflow-screen" id="clientInformationScreen" hidden aria-labelledby="clientInfoTitle">
-        <div class="step-label">STAGE 1 OF 2 · CLIENT REGISTRATION</div>
+        <div class="step-label">STAGE 1 OF 3 · CLIENT REGISTRATION</div>
         <h2 class="section-title" id="clientInfoTitle">Client Information</h2>
         <p class="section-intro">Please provide the following information to generate your Certificate of Appearance.</p>
 
@@ -113,14 +113,45 @@
           <div class="form-error" id="formError" role="alert" hidden></div>
           <div class="form-actions">
             <button type="button" class="secondary-button" id="backToWelcomeButton">Back</button>
-            <button type="submit" class="proceed-button" id="submitClientButton">Submit &amp; Generate Certificate <span class="button-arrow" aria-hidden="true">→</span></button>
+            <button type="submit" class="proceed-button" id="submitClientButton">Continue to CSM Survey <span class="button-arrow" aria-hidden="true">→</span></button>
           </div>
+        </form>
+      </section>
+
+
+      <section class="workflow-screen" id="csmScreen" hidden aria-labelledby="csmTitle">
+        <div class="step-label">STAGE 2 OF 3 · CLIENT SATISFACTION MEASUREMENT</div>
+        <h2 class="section-title" id="csmTitle">Client Satisfaction Survey</h2>
+        <p class="section-intro">Please answer the following questions based on your experience with the service you availed.</p>
+        <form id="csmForm" novalidate>
+          <div class="form-field"><label for="clientType">Client Type <span>*</span></label><select id="clientType" required><option value="">Select client type</option><option>Citizen</option><option>Business</option><option>Government (Employee or another agency)</option></select></div>
+          <div class="survey-grid">
+            <div class="form-field"><label for="surveyDate">Date <span>*</span></label><input id="surveyDate" type="date" required></div>
+            <div class="form-field"><label for="sex">Sex <span>*</span></label><select id="sex" required><option value="">Select</option><option>Male</option><option>Female</option></select></div>
+            <div class="form-field"><label for="age">Age <span>*</span></label><input id="age" type="number" min="1" max="120" step="1" required></div>
+            <div class="form-field"><label for="region">Region of Residence <span>*</span></label><select id="region" required><option value="">Select region</option><option>NCR</option><option>Region I - Ilocos Region</option><option>Region II - Cagayan Valley</option><option>Region III - Central Luzon</option><option>Region IV-A - CALABARZON</option><option>MIMAROPA Region</option><option>Region V - Bicol Region</option><option>Region VI - Western Visayas</option><option>Region VII - Central Visayas</option><option>Region VIII - Eastern Visayas</option><option>Region IX - Zamboanga Peninsula</option><option>Region X - Northern Mindanao</option><option>Region XI - Davao Region</option><option>Region XII - SOCCSKSARGEN</option><option>Region XIII - Caraga</option><option>BARMM</option><option>Outside the Philippines</option></select></div>
+          </div>
+          <div class="form-field"><label for="serviceAvailed">Service Availed <span>*</span></label><input id="serviceAvailed" type="text" maxlength="300" placeholder="Enter the service you availed" required></div>
+          <div class="survey-section"><h3>Citizen's Charter (CC)</h3>
+            <div class="form-field"><label>CC1. Which of the following best describes your awareness of a Citizen's Charter (CC)? <span>*</span></label><div id="cc1Options" class="choice-list"></div></div>
+            <div class="form-field" id="cc2Field"><label>CC2. If aware of the CC, would you say that the CC of this office was...? <span>*</span></label><div id="cc2Options" class="choice-list"></div></div>
+            <div class="form-field" id="cc3Field"><label>CC3. If aware of the CC, how much did the CC help you in your transaction? <span>*</span></label><div id="cc3Options" class="choice-list"></div></div>
+          </div>
+          <div class="survey-section"><h3>Service Quality Dimensions (SQD)</h3><p class="form-note">Select one response for each statement. Questions will appear one at a time.</p>
+            <div class="sqd-progress"><div class="sqd-progress-track"><div id="sqdProgressBar"></div></div><span id="sqdProgressText">Question 1 of 9</span></div>
+            <div id="sqdQuestionCard" class="sqd-question-card"></div>
+            <div class="form-actions"><button type="button" class="secondary-button" id="sqdPreviousButton">Previous</button><button type="button" class="proceed-button" id="sqdNextButton">Next Question →</button></div>
+          </div>
+          <div class="form-field"><label for="suggestions">Suggestions / Comments (Optional)</label><textarea id="suggestions" rows="3" maxlength="2000" placeholder="Share your suggestions or comments"></textarea></div>
+          <div class="form-field"><label for="emailAddress">Email Address (Optional)</label><input id="emailAddress" type="email" maxlength="200" placeholder="name@example.com"></div>
+          <div class="form-error" id="csmError" role="alert" hidden></div>
+          <div class="form-actions"><button type="button" class="secondary-button" id="backToClientButton">Back</button><button type="submit" class="proceed-button" id="submitCsmButton">Submit Survey →</button></div>
         </form>
       </section>
 
       <section class="workflow-screen result-screen" id="certificateScreen" hidden aria-labelledby="certificateTitle" aria-live="polite">
         <div class="success-mark" aria-hidden="true">✓</div>
-        <div class="step-label">CLIENT REGISTRATION COMPLETE</div>
+        <div class="step-label">STAGE 3 OF 3 · CERTIFICATE OF APPEARANCE</div>
         <h2 class="section-title" id="certificateTitle">Certificate of Appearance</h2>
         <p class="section-intro" id="certificateMessage">Your client information has been recorded.</p>
         <div class="control-number-panel">
@@ -132,7 +163,7 @@
         </div>
         <div class="form-error" id="certificateError" role="alert" hidden></div>
         <button type="button" class="secondary-button retry-button" id="retryCertificateButton" hidden>Retry Certificate Generation</button>
-        <p class="print-instruction" id="printInstruction">Please present your printed Certificate of Appearance to the Administrative Officer / Aide of the Day, or directly to the Supervisor if present.</p>
+        <p class="print-instruction" id="printInstruction">Please print your Certificate of Appearance and submit it to the Administrative Officer / Aide of the Day, or directly to the Supervisor if present.</p>
       </section>
     </section>
 

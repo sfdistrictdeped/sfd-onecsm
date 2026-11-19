@@ -19,3 +19,12 @@ The welcome screen and API connectivity check are connected. The client-informat
 
 ## Deployment
 Upload the contents of this folder to the root of the GitHub Pages repository. Keep the `assets`, `css`, and `js` folders in their current locations.
+
+
+## Updated client workflow
+1. Welcome, privacy notice, and consent.
+2. Client information is saved and the Certificate of Appearance is generated in the background.
+3. Client completes the CSM questionnaire (CC1–CC3 and SQD0–SQD8).
+4. After successful CSM submission, the certificate screen is shown for opening/printing.
+
+The certificate is generated after client registration but is not displayed until the survey is submitted.

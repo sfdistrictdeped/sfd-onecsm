@@ -1,165 +1,48 @@
 /****************************************************
  * SAN FERNANDO DISTRICT ONECSM — FRONTEND API CLIENT
  ****************************************************/
-
 const API_URL = "https://script.google.com/macros/s/AKfycbzQ22SS12cfTw5OZSQRREpbKcwInqLMHWcfk8FulLguw7fMm7p9eqPID_gLUM9ziqkQJA/exec";
 let apiOnline = false;
 let activeControlNumber = null;
-
-async function apiRequest(action, data = {}) {
-  const response = await fetch(API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({ action, data })
-  });
-  if (!response.ok) throw new Error(`API request failed (HTTP ${response.status}).`);
-  const payload = await response.json();
-  if (!payload || typeof payload !== "object") throw new Error("The API returned an invalid response.");
-  if (payload.success !== true) throw new Error(payload.message || "The API could not process the request.");
-  if (payload.result && payload.result.success === false) throw new Error(payload.result.message || "The transaction was not completed.");
-  return payload.result ?? payload;
+let certificateResult = null;
+let sqdIndex = 0;
+const cc1Choices = ["I know what a CC is and I saw this office's CC.","I know what a CC is but I did NOT see this office's CC.","I learned of the CC only when I saw this office's CC.","I do not know what a CC is and I did not see one in this office."];
+const cc2Choices = ["Easy to see","Somewhat easy to see","Difficult to see","Not visible at all","N/A"];
+const cc3Choices = ["Helped very much","Somewhat helped","Did not help","N/A"];
+const sqdQuestions = [
+ "I am satisfied with the service that I availed.",
+ "I spent a reasonable amount of time for my transaction.",
+ "The office followed the transaction's requirements and steps based on the information provided.",
+ "The steps (including payment) I needed to do for my transaction were easy and simple.",
+ "I easily found information about my transaction from the office or its website.",
+ "I paid a reasonable amount of fees for my transaction.",
+ "I feel the office was fair to everyone, or ‘walang palakasan’, during my transaction.",
+ "I was treated courteously by the staff, and (if asked for help) the staff was helpful.",
+ "I got what I needed from the government office, or (if denied) denial of request was sufficiently explained to me."
+];
+const ratingChoices = [{emoji:"😀",label:"Strongly Agree"},{emoji:"😊",label:"Agree"},{emoji:"😐",label:"Neither Agree nor Disagree"},{emoji:"😞",label:"Disagree"},{emoji:"😭",label:"Strongly Disagree"},{emoji:"🤔",label:"Not Applicable"}];
+async function apiRequest(action,data={}) {
+ const response=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action,data})});
+ if(!response.ok) throw new Error(`API request failed (HTTP ${response.status}).`);
+ const payload=await response.json(); if(!payload||typeof payload!=="object") throw new Error("The API returned an invalid response.");
+ if(payload.success!==true) throw new Error(payload.message||"The API could not process the request.");
+ if(payload.result&&payload.result.success===false) throw new Error(payload.result.message||"The transaction was not completed.");
+ return payload.result??payload;
 }
-
-async function checkApiConnection() {
-  const notice = document.getElementById("developmentNotice");
-  try {
-    const response = await fetch(`${API_URL}?action=ping`, { method: "GET", cache: "no-store" });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const result = await response.json();
-    if (result.success !== true || result.status !== "API ONLINE") throw new Error("Unexpected API response.");
-    apiOnline = true;
-    notice.textContent = "System connection verified. You may proceed.";
-    notice.classList.add("api-online");
-    notice.classList.remove("api-offline");
-  } catch (error) {
-    console.error("OneCSM API connection error:", error);
-    apiOnline = false;
-    notice.textContent = "Unable to connect to the OneCSM server. Please check your internet connection or contact the system administrator.";
-    notice.classList.add("api-offline");
-    notice.classList.remove("api-online");
-  }
-  notice.style.display = "block";
-  updateProceedButton();
-}
-
-function updateProceedButton() {
-  const consentGiven = document.getElementById("consentCheckbox").checked;
-  document.getElementById("proceedButton").disabled = !consentGiven || !apiOnline;
-  document.getElementById("buttonHint").textContent = !consentGiven
-    ? "Please read the notice and provide your consent to continue."
-    : apiOnline ? "Thank you. You may now proceed." : "Waiting for a connection to the OneCSM server.";
-}
-
-function showScreen(screenId) {
-  document.getElementById("clientInformationScreen").hidden = screenId !== "clientInformationScreen";
-  document.getElementById("certificateScreen").hidden = screenId !== "certificateScreen";
-  const welcomeElements = ["welcomeTitle", "welcomeIntro", "privacyPanel", "consentRow", "proceedButton", "buttonHint", "developmentNotice"];
-  welcomeElements.forEach(id => {
-    const element = document.getElementById(id);
-    if (element) element.hidden = screenId !== "welcome";
-  });
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function proceedToAppearance() {
-  if (!document.getElementById("consentCheckbox").checked || !apiOnline) return;
-  showScreen("clientInformationScreen");
-  document.getElementById("fullName").focus();
-}
-
-function setFormBusy(busy) {
-  const button = document.getElementById("submitClientButton");
-  button.disabled = busy;
-  button.textContent = busy ? "Submitting… Please wait" : "Submit & Generate Certificate →";
-}
-
-function showFormError(message) {
-  const error = document.getElementById("formError");
-  error.textContent = message;
-  error.hidden = false;
-}
-
-async function submitClientInformation(event) {
-  event.preventDefault();
-  const form = document.getElementById("clientInformationForm");
-  const error = document.getElementById("formError");
-  error.hidden = true;
-  if (!form.reportValidity()) return;
-  if (!apiOnline) return showFormError("The server connection is unavailable. Please try again later.");
-
-  const data = {
-    fullName: document.getElementById("fullName").value.trim().toUpperCase(),
-    schoolOrAgency: document.getElementById("schoolOrAgency").value.trim().toUpperCase(),
-    purpose: document.getElementById("purpose").value.trim().toUpperCase(),
-    consentGiven: document.getElementById("consentCheckbox").checked
-  };
-  if (!data.consentGiven) return showFormError("Consent is required before submitting.");
-  setFormBusy(true);
-  try {
-    const result = await apiRequest("startClientTransaction", data);
-    activeControlNumber = result.controlNumber;
-    displayCertificateResult(result);
-    showScreen("certificateScreen");
-  } catch (err) {
-    console.error("Client transaction failed:", err);
-    showFormError(`${err.message} Your information may not have been submitted. Please do not submit repeatedly; contact the office if you are unsure.`);
-  } finally {
-    setFormBusy(false);
-  }
-}
-
-function displayCertificateResult(result) {
-  document.getElementById("controlNumberValue").textContent = result.controlNumber || "Not available";
-  const message = document.getElementById("certificateMessage");
-  const actions = document.getElementById("certificateActions");
-  const error = document.getElementById("certificateError");
-  const retry = document.getElementById("retryCertificateButton");
-  const link = document.getElementById("openCertificateLink");
-  error.hidden = true;
-  if (result.certificateReady && result.pdfUrl) {
-    message.textContent = "Your information has been recorded and your Certificate of Appearance is ready.";
-    link.href = result.pdfUrl;
-    actions.hidden = false;
-    retry.hidden = true;
-  } else {
-    message.textContent = "Your information has been recorded, but the certificate could not be generated yet.";
-    actions.hidden = true;
-    retry.hidden = false;
-    error.textContent = result.certificateError || result.message || "Certificate generation failed.";
-    error.hidden = false;
-  }
-}
-
-async function retryCertificateGeneration() {
-  if (!activeControlNumber) return;
-  const button = document.getElementById("retryCertificateButton");
-  const error = document.getElementById("certificateError");
-  button.disabled = true;
-  button.textContent = "Retrying…";
-  error.hidden = true;
-  try {
-    const result = await apiRequest("retryAppearancePDF", { controlNumber: activeControlNumber });
-    displayCertificateResult(result);
-  } catch (err) {
-    error.textContent = err.message;
-    error.hidden = false;
-  } finally {
-    button.disabled = false;
-    button.textContent = "Retry Certificate Generation";
-  }
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("clientInformationForm").addEventListener("submit", submitClientInformation);
-  document.getElementById("backToWelcomeButton").addEventListener("click", () => showScreen("welcome"));
-  document.getElementById("retryCertificateButton").addEventListener("click", retryCertificateGeneration);
-  ["fullName", "schoolOrAgency", "purpose"].forEach(id => {
-    document.getElementById(id).addEventListener("input", event => {
-      const start = event.target.selectionStart;
-      const end = event.target.selectionEnd;
-      event.target.value = event.target.value.toUpperCase();
-      try { event.target.setSelectionRange(start, end); } catch (_) {}
-    });
-  });
-  checkApiConnection();
-});
+async function checkApiConnection(){const notice=document.getElementById("developmentNotice");try{const r=await fetch(`${API_URL}?action=ping`,{cache:"no-store"});if(!r.ok)throw new Error(`HTTP ${r.status}`);const d=await r.json();if(d.success!==true||d.status!=="API ONLINE")throw new Error("Unexpected API response.");apiOnline=true;notice.textContent="System connection verified. You may proceed.";notice.classList.add("api-online");notice.classList.remove("api-offline");}catch(e){console.error(e);apiOnline=false;notice.textContent="Unable to connect to the OneCSM server. Please check your internet connection or contact the system administrator.";notice.classList.add("api-offline");notice.classList.remove("api-online");}notice.style.display="block";updateProceedButton();}
+function updateProceedButton(){const c=document.getElementById("consentCheckbox");if(!c)return;const given=c.checked;document.getElementById("proceedButton").disabled=!given||!apiOnline;document.getElementById("buttonHint").textContent=!given?"Please read the notice and provide your consent to continue.":apiOnline?"Thank you. You may now proceed.":"Waiting for a connection to the OneCSM server.";}
+function showScreen(id){const ids=["clientInformationScreen","csmScreen","certificateScreen"];ids.forEach(x=>document.getElementById(x).hidden=x!==id);const welcome=["welcomeTitle","welcomeIntro","privacyPanel","consentRow","proceedButton","buttonHint","developmentNotice"];welcome.forEach(x=>{const el=document.getElementById(x);if(el)el.hidden=id!=="welcome";});window.scrollTo({top:0,behavior:"smooth"});}
+function proceedToAppearance(){if(!document.getElementById("consentCheckbox").checked||!apiOnline)return;showScreen("clientInformationScreen");document.getElementById("fullName").focus();}
+function setBusy(id,busy,busyText,normalText){const b=document.getElementById(id);b.disabled=busy;b.textContent=busy?busyText:normalText;}
+function showError(id,msg){const el=document.getElementById(id);el.textContent=msg;el.hidden=false;}
+async function submitClientInformation(event){event.preventDefault();const form=document.getElementById("clientInformationForm");document.getElementById("formError").hidden=true;if(!form.reportValidity())return;if(!apiOnline)return showError("formError","The server connection is unavailable.");const data={fullName:document.getElementById("fullName").value.trim().toUpperCase(),schoolOrAgency:document.getElementById("schoolOrAgency").value.trim().toUpperCase(),purpose:document.getElementById("purpose").value.trim().toUpperCase(),consentGiven:document.getElementById("consentCheckbox").checked};if(!data.consentGiven)return showError("formError","Consent is required before submitting.");setBusy("submitClientButton",true,"Saving client information…","Continue to CSM Survey →");try{const result=await apiRequest("startClientTransaction",data);activeControlNumber=result.controlNumber;certificateResult=result;document.getElementById("surveyDate").value=[new Date().getFullYear(),String(new Date().getMonth()+1).padStart(2,"0"),String(new Date().getDate()).padStart(2,"0")].join("-");showScreen("csmScreen");renderSqdQuestion();}catch(e){showError("formError",e.message+" If unsure whether the record was saved, contact the office before trying again.");}finally{setBusy("submitClientButton",false,"Saving client information…","Continue to CSM Survey →");}}
+function renderChoices(containerId,name,choices){const box=document.getElementById(containerId);box.innerHTML=choices.map((v,i)=>`<label class="choice-option"><input type="radio" name="${name}" value="${v.replace(/&/g,"&amp;").replace(/"/g,"&quot;")}"><span>${v}</span></label>`).join("");}
+function selected(name){return document.querySelector(`input[name="${name}"]:checked`)?.value||"";}
+function handleCC1Change(){const skip=selected("cc1")===cc1Choices[3];document.getElementById("cc2Field").hidden=skip;document.getElementById("cc3Field").hidden=skip;}
+function renderSqdQuestion(){const q=sqdQuestions[sqdIndex];document.getElementById("sqdProgressText").textContent=`Question ${sqdIndex+1} of 9`;document.getElementById("sqdProgressBar").style.width=`${(sqdIndex+1)/9*100}%`;document.getElementById("sqdQuestionCard").innerHTML=`<div class="sqd-number">SQD${sqdIndex}</div><p class="sqd-statement">${q}</p><div class="rating-grid">${ratingChoices.map(r=>`<label class="rating-option"><input type="radio" name="sqd${sqdIndex}" value="${r.emoji}"><span class="rating-emoji">${r.emoji}</span><span class="rating-label">${r.label}</span></label>`).join("")}</div>`;document.getElementById("sqdPreviousButton").disabled=sqdIndex===0;document.getElementById("sqdNextButton").textContent=sqdIndex===8?"Review & Submit →":"Next Question →";}
+function moveSqd(delta){if(delta<0){sqdIndex=Math.max(0,sqdIndex-1);document.getElementById("csmError").hidden=true;renderSqdQuestion();return;}if(!selected(`sqd${sqdIndex}`)){showError("csmError",`Please select a response for SQD${sqdIndex} before continuing.`);return;}document.getElementById("csmError").hidden=true;if(sqdIndex===8){document.getElementById("suggestions").scrollIntoView({behavior:"smooth",block:"center"});document.getElementById("submitCsmButton").focus();return;}sqdIndex=Math.min(8,sqdIndex+1);renderSqdQuestion();}
+function validateCsmForm(){const ids=["clientType","surveyDate","sex","age","region","serviceAvailed"];for(const id of ids){const el=document.getElementById(id);if(!String(el.value).trim()){el.focus();throw new Error("Please complete all required client and service information fields.");}}if(!selected("cc1"))throw new Error("Please answer CC1.");if(selected("cc1")!==cc1Choices[3]&&!selected("cc2"))throw new Error("Please answer CC2.");if(selected("cc1")!==cc1Choices[3]&&!selected("cc3"))throw new Error("Please answer CC3.");for(let i=0;i<9;i++)if(!selected(`sqd${i}`))throw new Error(`Please answer SQD${i}.`);}
+async function submitCsm(event){event.preventDefault();document.getElementById("csmError").hidden=true;try{validateCsmForm();const email=document.getElementById("emailAddress").value.trim();if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new Error("Please enter a valid email address.");}catch(e){return showError("csmError",e.message);}const data={controlNumber:activeControlNumber,clientType:document.getElementById("clientType").value,date:document.getElementById("surveyDate").value,sex:document.getElementById("sex").value,age:document.getElementById("age").value,regionOfResidence:document.getElementById("region").value,serviceAvailed:document.getElementById("serviceAvailed").value.trim(),cc1:selected("cc1"),cc2:selected("cc2")||"N/A",cc3:selected("cc3")||"N/A",suggestions:document.getElementById("suggestions").value.trim(),emailAddress:document.getElementById("emailAddress").value.trim()};for(let i=0;i<9;i++)data[`sqd${i}`]=selected(`sqd${i}`);setBusy("submitCsmButton",true,"Submitting survey…","Submit Survey →");try{await apiRequest("submitCSMResponse",data);displayCertificateResult(certificateResult);showScreen("certificateScreen");}catch(e){showError("csmError",e.message);}finally{setBusy("submitCsmButton",false,"Submitting survey…","Submit Survey →");}}
+function displayCertificateResult(result){document.getElementById("controlNumberValue").textContent=result.controlNumber||activeControlNumber||"Not available";const msg=document.getElementById("certificateMessage"),actions=document.getElementById("certificateActions"),err=document.getElementById("certificateError"),retry=document.getElementById("retryCertificateButton"),link=document.getElementById("openCertificateLink");err.hidden=true;if(result.certificateReady&&result.pdfUrl){msg.textContent="Thank you for completing the survey. Your information and feedback have been recorded. Your Certificate of Appearance is ready.";link.href=result.pdfUrl;actions.hidden=false;retry.hidden=true;}else{msg.textContent="Your information and survey response have been recorded, but the certificate could not be generated yet.";actions.hidden=true;retry.hidden=false;err.textContent=result.certificateError||result.message||"Certificate generation failed.";err.hidden=false;}}
+async function retryCertificateGeneration(){if(!activeControlNumber)return;const b=document.getElementById("retryCertificateButton"),err=document.getElementById("certificateError");b.disabled=true;b.textContent="Retrying…";err.hidden=true;try{certificateResult=await apiRequest("retryAppearancePDF",{controlNumber:activeControlNumber});displayCertificateResult(certificateResult);}catch(e){showError("certificateError",e.message);}finally{b.disabled=false;b.textContent="Retry Certificate Generation";}}
+document.addEventListener("DOMContentLoaded",()=>{document.getElementById("clientInformationForm").addEventListener("submit",submitClientInformation);document.getElementById("csmForm").addEventListener("submit",submitCsm);document.getElementById("backToWelcomeButton").addEventListener("click",()=>showScreen("welcome"));document.getElementById("backToClientButton").addEventListener("click",()=>showScreen("clientInformationScreen"));document.getElementById("retryCertificateButton").addEventListener("click",retryCertificateGeneration);document.getElementById("sqdPreviousButton").addEventListener("click",()=>moveSqd(-1));document.getElementById("sqdNextButton").addEventListener("click",()=>moveSqd(1));renderChoices("cc1Options","cc1",cc1Choices);renderChoices("cc2Options","cc2",cc2Choices);renderChoices("cc3Options","cc3",cc3Choices);document.getElementById("cc1Options").addEventListener("change",handleCC1Change);["fullName","schoolOrAgency","purpose"].forEach(id=>document.getElementById(id).addEventListener("input",e=>{const a=e.target.selectionStart,b=e.target.selectionEnd;e.target.value=e.target.value.toUpperCase();try{e.target.setSelectionRange(a,b);}catch(_){}}));checkApiConnection();});
