@@ -288,3 +288,18 @@
         transition-duration: .01ms !important;
       }
     }
+
+/* OneCSM API connection status */
+.notice.api-online {
+  display: block;
+  color: #14532d;
+  background: #dcfce7;
+  border: 1px solid #86efac;
+}
+
+.notice.api-offline {
+  display: block;
+  color: #991b1b;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+}
