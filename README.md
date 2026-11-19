@@ -1,17 +1,21 @@
-# San Fernando District OneCSM
+# San Fernando District OneCSM — Initial Frontend
 
-Initial static frontend for GitHub Pages.
+This is the initial GitHub Pages frontend package for the San Fernando District OneCSM system.
 
-## Structure
-- `index.html` — welcome and consent screen
-- `css/style.css` — interface styling
-- `js/app.js` — consent interaction
-- `assets/logos/` — institutional logos
+## Included
+- Welcome and data privacy consent screen
+- San Fernando District and institutional logos
+- Apps Script API connection check (`?action=ping`)
+- JSON API request helper for the backend actions:
+  - `startClientTransaction`
+  - `retryAppearancePDF`
+  - `submitCSMResponse`
 
-## Current status
-This is the initial frontend shell. The Proceed action is intentionally a temporary
-placeholder. It is not yet connected to the Google Apps Script backend.
+## API endpoint
+The deployed Google Apps Script Web App URL is configured in `js/app.js`.
+
+## Current development status
+The welcome screen and API connectivity check are connected. The client-information form, certificate flow, CSM survey screens, and completion/reset flow are still to be implemented.
 
 ## Deployment
-After these files are uploaded to the repository's `main` branch at the repository root,
-enable GitHub Pages using **Settings → Pages → Deploy from a branch → main → /(root)**.
+Upload the contents of this folder to the root of the GitHub Pages repository. Keep the `assets`, `css`, and `js` folders in their current locations.
