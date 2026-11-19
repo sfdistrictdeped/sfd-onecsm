@@ -5,6 +5,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbzQ22SS12cfTw5OZSQRREpb
 let apiOnline = false;
 let activeControlNumber = null;
 let certificateResult = null;
+let activeCertificateBlobUrl = null;
 let currentSurveyPage = "client";
 
 const cc1Choices = [
@@ -245,7 +246,7 @@ function displayCertificateResult(result){
   const retry=document.getElementById("retryCertificateButton");
   const link=document.getElementById("openCertificateLink");
   err.hidden=true;
-  if(result.certificateReady&&result.pdfUrl){
+  if(result.certificateReady&&result.certificateToken){
     msg.textContent="Thank you for completing the survey. Your information and feedback have been recorded. Your Certificate of Appearance is ready.";
     link.disabled=false;actions.hidden=false;retry.hidden=true;
   }else{
@@ -283,6 +284,10 @@ function resetKioskToWelcome(){
   document.getElementById("controlNumberValue").textContent="—";
   document.getElementById("certificatePreviewFrame").src="about:blank";
   document.getElementById("certificatePreviewOverlay").hidden=true;
+  if(activeCertificateBlobUrl){
+    URL.revokeObjectURL(activeCertificateBlobUrl);
+    activeCertificateBlobUrl=null;
+  }
 
   activeControlNumber=null;
   certificateResult=null;
@@ -291,17 +296,40 @@ function resetKioskToWelcome(){
   window.scrollTo({top:0,behavior:"instant"});
 }
 
-function openCertificatePreview(){
-  if(!certificateResult || !certificateResult.pdfUrl)return;
-  const frame=document.getElementById("certificatePreviewFrame");
-  // Keep the kiosk application in its current tab; display the PDF inside an overlay.
-  frame.src=certificateResult.pdfUrl;
-  document.getElementById("certificatePreviewOverlay").hidden=false;
+async function openCertificatePreview(){
+  if(!certificateResult || !certificateResult.certificateToken || !activeControlNumber)return;
+  const button=document.getElementById("openCertificateLink");
+  button.disabled=true;
+  const originalText=button.textContent;
+  button.textContent="Preparing certificate…";
+  try{
+    const pdfData=await apiRequest("getAppearancePdf",{
+      controlNumber:activeControlNumber,
+      certificateToken:certificateResult.certificateToken
+    });
+    const binary=atob(pdfData.base64);
+    const bytes=new Uint8Array(binary.length);
+    for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+    const pdfBlob=new Blob([bytes],{type:"application/pdf"});
+    if(activeCertificateBlobUrl)URL.revokeObjectURL(activeCertificateBlobUrl);
+    activeCertificateBlobUrl=URL.createObjectURL(pdfBlob);
+    document.getElementById("certificatePreviewFrame").src=activeCertificateBlobUrl;
+    document.getElementById("certificatePreviewOverlay").hidden=false;
+  }catch(error){
+    showError("certificateError",error.message);
+  }finally{
+    button.disabled=false;
+    button.textContent=originalText;
+  }
 }
 
 function closeCertificatePreview(){
   document.getElementById("certificatePreviewOverlay").hidden=true;
   document.getElementById("certificatePreviewFrame").src="about:blank";
+  if(activeCertificateBlobUrl){
+    URL.revokeObjectURL(activeCertificateBlobUrl);
+    activeCertificateBlobUrl=null;
+  }
 }
 
 function finishCertificateAndReset(){

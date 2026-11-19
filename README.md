@@ -29,3 +29,13 @@ After the client clicks **Open / Print Certificate**, the PDF opens in a new tab
 
 ## Kiosk certificate printing
 The PDF opens inside an in-app overlay instead of navigating to a new browser tab. The kiosk remains on OneCSM. After printing, the client selects “Done — Return to Welcome”; the app displays a short thank-you message and resets to the welcome screen after 5 seconds.
+
+
+## Private certificate delivery (Apps Script backend update required)
+The PDF remains private in the existing Google Drive folder. The frontend requests its PDF bytes from Apps Script using a short-lived per-transaction token (15 minutes), then creates a browser-local Blob URL for the embedded PDF viewer. The kiosk does not open a Google Drive sharing page and the PDF does not need to be made public.
+
+### Deployment
+1. Replace the entire Apps Script `Code.gs` with the supplied updated `Code.gs`.
+2. Save and deploy a **New version** of the existing Web App deployment.
+3. Keep Execute as: Me; Who has access: Anyone.
+4. Replace the GitHub Pages frontend files with this ZIP's contents.
