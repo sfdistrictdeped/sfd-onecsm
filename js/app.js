@@ -254,6 +254,51 @@ function displayCertificateResult(result){
     err.textContent=result.certificateError||result.message||"Certificate generation failed.";err.hidden=false;
   }
 }
+
+function resetKioskToWelcome(){
+  // Clear the completed transaction from the kiosk before the next client.
+  const clientForm=document.getElementById("clientInformationForm");
+  const csmForm=document.getElementById("csmForm");
+  if(clientForm) clientForm.reset();
+  if(csmForm) csmForm.reset();
+
+  ["clientType","sex"].forEach(id=>{
+    const field=document.getElementById(id);
+    if(field) field.value="";
+  });
+  document.getElementById("clientTypePicker").innerHTML='Choose client type <span>⌄</span>';
+  document.getElementById("sexPicker").innerHTML='Choose sex <span>⌄</span>';
+  document.getElementById("clientTypePicker").classList.remove("has-value");
+  document.getElementById("sexPicker").classList.remove("has-value");
+
+  ["formError","clientPageError","ccPageError","sqdPageError","feedbackPageError","certificateError"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.hidden=true;el.textContent="";}
+  });
+  document.getElementById("cc2Field").hidden=false;
+  document.getElementById("pickerOverlay").hidden=true;
+  document.getElementById("certificateActions").hidden=true;
+  document.getElementById("retryCertificateButton").hidden=true;
+  document.getElementById("certificateMessage").textContent="Your client information has been recorded.";
+  document.getElementById("controlNumberValue").textContent="—";
+  document.getElementById("openCertificateLink").href="#";
+
+  activeControlNumber=null;
+  certificateResult=null;
+  setTodayDate();
+  showScreen("welcome");
+  window.scrollTo({top:0,behavior:"instant"});
+}
+
+function handlePrintCertificateClick(){
+  // The certificate opens in a new tab; reset this kiosk tab five seconds later.
+  const message=document.getElementById("certificateMessage");
+  message.textContent="Thank you! Please submit your printed Certificate of Appearance to the Administrative Officer / Aide of the Day, or directly to the Supervisor if present. This kiosk will return to the welcome screen in 5 seconds.";
+  const link=document.getElementById("openCertificateLink");
+  link.setAttribute("aria-label","Certificate opened. Kiosk will reset in five seconds.");
+  window.setTimeout(resetKioskToWelcome,5000);
+}
+
 async function retryCertificateGeneration(){
   if(!activeControlNumber)return;
   const b=document.getElementById("retryCertificateButton"),err=document.getElementById("certificateError");
@@ -269,6 +314,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   document.getElementById("backToWelcomeButton").addEventListener("click",()=>showScreen("welcome"));
   document.getElementById("backToClientButton").addEventListener("click",()=>showSurveyPage("client"));
   document.getElementById("retryCertificateButton").addEventListener("click",retryCertificateGeneration);
+  document.getElementById("openCertificateLink").addEventListener("click",handlePrintCertificateClick);
   document.getElementById("clientToCcButton").addEventListener("click",()=>{if(validateClientPage())showSurveyPage("cc");});
   document.getElementById("ccBackButton").addEventListener("click",()=>showSurveyPage("client"));
   document.getElementById("ccToSqdButton").addEventListener("click",()=>{if(validateCcPage())showSurveyPage("sqd");});

@@ -14,3 +14,7 @@ Upload the contents of this folder to the existing GitHub Pages repository, repl
 
 ## Backend compatibility note
 The current Apps Script API contract accepts the address value through its existing `regionOfResidence` property. Consequently, until the backend spreadsheet schema is migrated, this address will be written into the existing `REGION_OF_RESIDENCE` column. Rename that sheet column to `ADDRESS` and update the Apps Script validation/write mapping in a coordinated backend update before production use.
+
+
+## Kiosk reset
+After the client clicks **Open / Print Certificate**, the PDF opens in a new tab and the kiosk page automatically resets to the welcome screen after 5 seconds, clearing the previous client's entered data.
