@@ -285,6 +285,25 @@
       </p>
     </footer>
   </main>
+
+
+  <div class="certificate-preview-overlay" id="certificatePreviewOverlay" hidden>
+    <section class="certificate-preview-dialog" role="dialog" aria-modal="true" aria-labelledby="certificatePreviewTitle">
+      <header class="certificate-preview-header">
+        <div>
+          <h2 id="certificatePreviewTitle">Certificate of Appearance</h2>
+          <p>Use the PDF viewer's print control. When finished, return to the kiosk.</p>
+        </div>
+        <button type="button" id="closeCertificatePreview" aria-label="Close certificate preview">×</button>
+      </header>
+      <iframe id="certificatePreviewFrame" title="Certificate of Appearance PDF" src="about:blank"></iframe>
+      <footer class="certificate-preview-footer">
+        <span>After printing, select Done to return the kiosk to its welcome screen.</span>
+        <button type="button" class="proceed-button" id="finishCertificateButton">Done — Return to Welcome</button>
+      </footer>
+    </section>
+  </div>
+
   <script src="js/app.js"></script>
 </body>
 </html>
