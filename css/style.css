@@ -303,3 +303,32 @@
   background: #fee2e2;
   border: 1px solid #fca5a5;
 }
+
+/* OneCSM Stage 1 workflow screens */
+[hidden] { display: none !important; }
+.workflow-screen { max-width: 680px; margin: 36px auto 0; text-align: left; }
+.step-label { color: #8a6c00; font-size: 11px; font-weight: 800; letter-spacing: 1.6px; text-align: center; }
+.section-title { margin: 10px 0 8px; color: var(--navy); font-size: clamp(25px, 3.5vw, 34px); text-align: center; }
+.section-intro { margin: 0 auto 26px; max-width: 560px; color: var(--muted); font-size: 14px; line-height: 1.6; text-align: center; }
+.form-field { margin: 0 0 19px; }
+.form-field label { display: block; margin-bottom: 8px; color: var(--navy); font-size: 13px; font-weight: 800; }
+.form-field label span { color: #b42318; }
+.form-field input, .form-field textarea { display: block; width: 100%; padding: 14px 15px; border: 1px solid #cfd6df; border-radius: 10px; outline: none; background: #fff; color: var(--ink); font: inherit; font-size: 15px; transition: border-color .15s, box-shadow .15s; }
+.form-field input:focus, .form-field textarea:focus { border-color: #b38b00; box-shadow: 0 0 0 3px rgba(255,207,0,.2); }
+.form-field textarea { resize: vertical; min-height: 94px; }
+.form-note { margin: -5px 0 20px; color: var(--muted); font-size: 11px; }
+.form-actions { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-top: 25px; }
+.form-actions .proceed-button { width: auto; flex: 1; }
+.secondary-button { min-height: 52px; padding: 13px 22px; border: 1px solid #cbd2dc; border-radius: 11px; background: #fff; color: var(--navy); font-size: 14px; font-weight: 800; cursor: pointer; }
+.secondary-button:hover { background: #f4f6f8; }
+.form-error { margin: 15px 0; padding: 12px 14px; border: 1px solid #f0b4b4; border-radius: 10px; background: #fff0f0; color: #991b1b; font-size: 13px; line-height: 1.5; }
+.result-screen { text-align: center; }
+.success-mark { display: flex; align-items: center; justify-content: center; width: 58px; height: 58px; margin: 0 auto 15px; border-radius: 50%; background: #dcfce7; color: #166534; font-size: 32px; font-weight: 800; }
+.control-number-panel { margin: 24px auto; padding: 18px; border: 1px dashed #d7b52d; border-radius: 12px; background: #fffbea; }
+.control-number-panel span { display: block; margin-bottom: 7px; color: #786000; font-size: 10px; font-weight: 800; letter-spacing: 1.5px; }
+.control-number-panel strong { color: var(--navy); font-size: 22px; letter-spacing: .5px; }
+.certificate-actions { margin: 22px auto; }
+.certificate-link { display: inline-flex; align-items: center; justify-content: center; width: auto; min-width: min(100%, 300px); text-decoration: none; }
+.retry-button { margin: 12px auto; }
+.print-instruction { margin: 24px auto 0; padding: 15px; border-radius: 10px; background: #f4f6f8; color: #4c5868; font-size: 12px; line-height: 1.6; }
+@media (max-width: 600px) { .workflow-screen { margin-top: 28px; } .form-actions { flex-direction: column-reverse; align-items: stretch; } .form-actions button { width: 100%; } .control-number-panel strong { font-size: 18px; } }

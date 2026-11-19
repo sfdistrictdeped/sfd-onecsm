@@ -22,15 +22,15 @@
 
       <div class="office-label">San Fernando District Office</div>
 
-      <h1>Welcome to the San Fernando District OneCSM System</h1>
+      <h1 id="welcomeTitle">Welcome to the San Fernando District OneCSM System</h1>
 
-      <p class="intro">
+      <p class="intro" id="welcomeIntro">
         Your feedback matters to us. Help us improve the quality,
         efficiency, and responsiveness of our public services through
         your participation in the Client Satisfaction Measurement.
       </p>
 
-      <section class="privacy-panel" aria-labelledby="privacyTitle">
+      <section class="privacy-panel" id="privacyPanel" aria-labelledby="privacyTitle">
         <h2 class="privacy-heading" id="privacyTitle">
           <span class="privacy-icon" aria-hidden="true">✓</span>
           Data Privacy Notice
@@ -62,7 +62,7 @@
         </p>
       </section>
 
-      <label class="consent-row" for="consentCheckbox">
+      <label class="consent-row" id="consentRow" for="consentCheckbox">
         <input
           type="checkbox"
           id="consentCheckbox"
@@ -90,6 +90,50 @@
       </p>
 
       <div class="notice" id="developmentNotice" role="status"></div>
+
+      <section class="workflow-screen" id="clientInformationScreen" hidden aria-labelledby="clientInfoTitle">
+        <div class="step-label">STAGE 1 OF 2 · CLIENT REGISTRATION</div>
+        <h2 class="section-title" id="clientInfoTitle">Client Information</h2>
+        <p class="section-intro">Please provide the following information to generate your Certificate of Appearance.</p>
+
+        <form id="clientInformationForm" novalidate>
+          <div class="form-field">
+            <label for="fullName">Full Name <span>*</span></label>
+            <input id="fullName" name="fullName" type="text" autocomplete="name" placeholder="Enter your full name" maxlength="150" required>
+          </div>
+          <div class="form-field">
+            <label for="schoolOrAgency">School / Agency <span>*</span></label>
+            <input id="schoolOrAgency" name="schoolOrAgency" type="text" placeholder="Enter your school or agency" maxlength="200" required>
+          </div>
+          <div class="form-field">
+            <label for="purpose">Purpose of Visit <span>*</span></label>
+            <textarea id="purpose" name="purpose" rows="3" placeholder="State the purpose of your visit" maxlength="500" required></textarea>
+          </div>
+          <p class="form-note">All entries will automatically be converted to uppercase.</p>
+          <div class="form-error" id="formError" role="alert" hidden></div>
+          <div class="form-actions">
+            <button type="button" class="secondary-button" id="backToWelcomeButton">Back</button>
+            <button type="submit" class="proceed-button" id="submitClientButton">Submit &amp; Generate Certificate <span class="button-arrow" aria-hidden="true">→</span></button>
+          </div>
+        </form>
+      </section>
+
+      <section class="workflow-screen result-screen" id="certificateScreen" hidden aria-labelledby="certificateTitle" aria-live="polite">
+        <div class="success-mark" aria-hidden="true">✓</div>
+        <div class="step-label">CLIENT REGISTRATION COMPLETE</div>
+        <h2 class="section-title" id="certificateTitle">Certificate of Appearance</h2>
+        <p class="section-intro" id="certificateMessage">Your client information has been recorded.</p>
+        <div class="control-number-panel">
+          <span>CONTROL NUMBER</span>
+          <strong id="controlNumberValue">—</strong>
+        </div>
+        <div class="certificate-actions" id="certificateActions" hidden>
+          <a class="proceed-button certificate-link" id="openCertificateLink" href="#" target="_blank" rel="noopener">Open / Print Certificate ↗</a>
+        </div>
+        <div class="form-error" id="certificateError" role="alert" hidden></div>
+        <button type="button" class="secondary-button retry-button" id="retryCertificateButton" hidden>Retry Certificate Generation</button>
+        <p class="print-instruction" id="printInstruction">Please present your printed Certificate of Appearance to the Administrative Officer / Aide of the Day, or directly to the Supervisor if present.</p>
+      </section>
     </section>
 
     <footer class="footer">
