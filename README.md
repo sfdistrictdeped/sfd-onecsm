@@ -39,3 +39,7 @@ The PDF remains private in the existing Google Drive folder. The frontend reques
 2. Save and deploy a **New version** of the existing Web App deployment.
 3. Keep Execute as: Me; Who has access: Anyone.
 4. Replace the GitHub Pages frontend files with this ZIP's contents.
+
+
+## Thank-you countdown
+After the kiosk user presses **Done — Return to Welcome**, OneCSM now displays a branded thank-you screen with a five-second visible countdown. The user can press **Return to Welcome Now** to skip the countdown. No Apps Script backend changes are needed for this frontend-only update.

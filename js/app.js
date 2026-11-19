@@ -6,6 +6,7 @@ let apiOnline = false;
 let activeControlNumber = null;
 let certificateResult = null;
 let activeCertificateBlobUrl = null;
+let thankYouCountdownTimer = null;
 let currentSurveyPage = "client";
 
 const cc1Choices = [
@@ -257,6 +258,13 @@ function displayCertificateResult(result){
 }
 
 function resetKioskToWelcome(){
+  if(thankYouCountdownTimer){
+    window.clearInterval(thankYouCountdownTimer);
+    thankYouCountdownTimer=null;
+  }
+  const thankYouOverlay=document.getElementById("thankYouOverlay");
+  if(thankYouOverlay)thankYouOverlay.hidden=true;
+
   // Clear the completed transaction from the kiosk before the next client.
   const clientForm=document.getElementById("clientInformationForm");
   const csmForm=document.getElementById("csmForm");
@@ -334,10 +342,39 @@ function closeCertificatePreview(){
 
 function finishCertificateAndReset(){
   closeCertificatePreview();
-  document.getElementById("certificateMessage").textContent=
-    "Thank you! Please submit your printed Certificate of Appearance to the Administrative Officer / Aide of the Day, or directly to the Supervisor if present.";
-  // Brief thank-you pause, then clear this kiosk for the next client.
-  window.setTimeout(resetKioskToWelcome,5000);
+
+  const overlay=document.getElementById("thankYouOverlay");
+  const counter=document.getElementById("thankYouCountdown");
+  const skipButton=document.getElementById("skipThankYouCountdown");
+
+  if(thankYouCountdownTimer){
+    window.clearInterval(thankYouCountdownTimer);
+    thankYouCountdownTimer=null;
+  }
+
+  let secondsRemaining=5;
+  counter.textContent=secondsRemaining;
+  overlay.hidden=false;
+  skipButton.focus();
+
+  thankYouCountdownTimer=window.setInterval(()=>{
+    secondsRemaining-=1;
+    counter.textContent=Math.max(secondsRemaining,0);
+
+    if(secondsRemaining<=0){
+      completeThankYouAndReset();
+    }
+  },1000);
+}
+
+function completeThankYouAndReset(){
+  if(thankYouCountdownTimer){
+    window.clearInterval(thankYouCountdownTimer);
+    thankYouCountdownTimer=null;
+  }
+  const overlay=document.getElementById("thankYouOverlay");
+  if(overlay)overlay.hidden=true;
+  resetKioskToWelcome();
 }
 
 async function retryCertificateGeneration(){
@@ -358,6 +395,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   document.getElementById("openCertificateLink").addEventListener("click",openCertificatePreview);
   document.getElementById("closeCertificatePreview").addEventListener("click",closeCertificatePreview);
   document.getElementById("finishCertificateButton").addEventListener("click",finishCertificateAndReset);
+  document.getElementById("skipThankYouCountdown").addEventListener("click",completeThankYouAndReset);
   document.getElementById("clientToCcButton").addEventListener("click",()=>{if(validateClientPage())showSurveyPage("cc");});
   document.getElementById("ccBackButton").addEventListener("click",()=>showSurveyPage("client"));
   document.getElementById("ccToSqdButton").addEventListener("click",()=>{if(validateCcPage())showSurveyPage("sqd");});
