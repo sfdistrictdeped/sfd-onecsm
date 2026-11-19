@@ -1,30 +1,16 @@
-# San Fernando District OneCSM — Initial Frontend
+# San Fernando District OneCSM — Revised Paged Frontend
 
-This is the initial GitHub Pages frontend package for the San Fernando District OneCSM system.
+## Workflow
+1. Welcome and consent
+2. Client information (client registration)
+3. CSM Page 1: Client information (client type and sex use button pop-up pickers; date is automatically set to today; address is typed manually)
+4. CSM Page 2: Citizen's Charter (CC1–CC3)
+5. CSM Page 3: All nine SQD questions on one page
+6. CSM Page 4: Suggestions and email
+7. Certificate of Appearance (shown after successful survey submission)
 
-## Included
-- Welcome and data privacy consent screen
-- San Fernando District and institutional logos
-- Apps Script API connection check (`?action=ping`)
-- JSON API request helper for the backend actions:
-  - `startClientTransaction`
-  - `retryAppearancePDF`
-  - `submitCSMResponse`
+## Install
+Upload the contents of this folder to the existing GitHub Pages repository, replacing the old `index.html`, `css/style.css`, `js/app.js`, and keeping the `assets` folder.
 
-## API endpoint
-The deployed Google Apps Script Web App URL is configured in `js/app.js`.
-
-## Current development status
-The welcome screen and API connectivity check are connected. The client-information form, certificate flow, CSM survey screens, and completion/reset flow are still to be implemented.
-
-## Deployment
-Upload the contents of this folder to the root of the GitHub Pages repository. Keep the `assets`, `css`, and `js` folders in their current locations.
-
-
-## Updated client workflow
-1. Welcome, privacy notice, and consent.
-2. Client information is saved and the Certificate of Appearance is generated in the background.
-3. Client completes the CSM questionnaire (CC1–CC3 and SQD0–SQD8).
-4. After successful CSM submission, the certificate screen is shown for opening/printing.
-
-The certificate is generated after client registration but is not displayed until the survey is submitted.
+## Backend compatibility note
+The current Apps Script API contract accepts the address value through its existing `regionOfResidence` property. Consequently, until the backend spreadsheet schema is migrated, this address will be written into the existing `REGION_OF_RESIDENCE` column. Rename that sheet column to `ADDRESS` and update the Apps Script validation/write mapping in a coordinated backend update before production use.
