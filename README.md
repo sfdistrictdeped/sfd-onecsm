@@ -18,3 +18,10 @@ The current Apps Script API contract accepts the address value through its exist
 
 ## Kiosk reset
 After the client clicks **Open / Print Certificate**, the PDF opens in a new tab and the kiosk page automatically resets to the welcome screen after 5 seconds, clearing the previous client's entered data.
+
+
+## Visual refresh
+- District logo is used as favicon and Apple touch icon.
+- Updated navy-blue and yellow Windows 7 Aero-inspired theme with glossy gradients, layered highlights, decorative circular motifs and depth.
+- Form and data-entry panels remain white / light grey for readability.
+- Footer heading: “Bansang Makabata, Batang Makabansa”; development credit and year updated.
