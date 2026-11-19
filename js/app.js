@@ -247,10 +247,10 @@ function displayCertificateResult(result){
   err.hidden=true;
   if(result.certificateReady&&result.pdfUrl){
     msg.textContent="Thank you for completing the survey. Your information and feedback have been recorded. Your Certificate of Appearance is ready.";
-    link.href=result.pdfUrl;actions.hidden=false;retry.hidden=true;
+    link.disabled=false;actions.hidden=false;retry.hidden=true;
   }else{
     msg.textContent="Your information and survey response have been recorded, but the certificate could not be generated yet.";
-    actions.hidden=true;retry.hidden=false;
+    link.disabled=true;actions.hidden=true;retry.hidden=false;
     err.textContent=result.certificateError||result.message||"Certificate generation failed.";err.hidden=false;
   }
 }
@@ -281,7 +281,8 @@ function resetKioskToWelcome(){
   document.getElementById("retryCertificateButton").hidden=true;
   document.getElementById("certificateMessage").textContent="Your client information has been recorded.";
   document.getElementById("controlNumberValue").textContent="—";
-  document.getElementById("openCertificateLink").href="#";
+  document.getElementById("certificatePreviewFrame").src="about:blank";
+  document.getElementById("certificatePreviewOverlay").hidden=true;
 
   activeControlNumber=null;
   certificateResult=null;
@@ -290,12 +291,24 @@ function resetKioskToWelcome(){
   window.scrollTo({top:0,behavior:"instant"});
 }
 
-function handlePrintCertificateClick(){
-  // The certificate opens in a new tab; reset this kiosk tab five seconds later.
-  const message=document.getElementById("certificateMessage");
-  message.textContent="Thank you! Please submit your printed Certificate of Appearance to the Administrative Officer / Aide of the Day, or directly to the Supervisor if present. This kiosk will return to the welcome screen in 5 seconds.";
-  const link=document.getElementById("openCertificateLink");
-  link.setAttribute("aria-label","Certificate opened. Kiosk will reset in five seconds.");
+function openCertificatePreview(){
+  if(!certificateResult || !certificateResult.pdfUrl)return;
+  const frame=document.getElementById("certificatePreviewFrame");
+  // Keep the kiosk application in its current tab; display the PDF inside an overlay.
+  frame.src=certificateResult.pdfUrl;
+  document.getElementById("certificatePreviewOverlay").hidden=false;
+}
+
+function closeCertificatePreview(){
+  document.getElementById("certificatePreviewOverlay").hidden=true;
+  document.getElementById("certificatePreviewFrame").src="about:blank";
+}
+
+function finishCertificateAndReset(){
+  closeCertificatePreview();
+  document.getElementById("certificateMessage").textContent=
+    "Thank you! Please submit your printed Certificate of Appearance to the Administrative Officer / Aide of the Day, or directly to the Supervisor if present.";
+  // Brief thank-you pause, then clear this kiosk for the next client.
   window.setTimeout(resetKioskToWelcome,5000);
 }
 
@@ -314,7 +327,9 @@ document.addEventListener("DOMContentLoaded",()=>{
   document.getElementById("backToWelcomeButton").addEventListener("click",()=>showScreen("welcome"));
   document.getElementById("backToClientButton").addEventListener("click",()=>showSurveyPage("client"));
   document.getElementById("retryCertificateButton").addEventListener("click",retryCertificateGeneration);
-  document.getElementById("openCertificateLink").addEventListener("click",handlePrintCertificateClick);
+  document.getElementById("openCertificateLink").addEventListener("click",openCertificatePreview);
+  document.getElementById("closeCertificatePreview").addEventListener("click",closeCertificatePreview);
+  document.getElementById("finishCertificateButton").addEventListener("click",finishCertificateAndReset);
   document.getElementById("clientToCcButton").addEventListener("click",()=>{if(validateClientPage())showSurveyPage("cc");});
   document.getElementById("ccBackButton").addEventListener("click",()=>showSurveyPage("client"));
   document.getElementById("ccToSqdButton").addEventListener("click",()=>{if(validateCcPage())showSurveyPage("sqd");});

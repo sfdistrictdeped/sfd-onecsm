@@ -25,3 +25,7 @@ After the client clicks **Open / Print Certificate**, the PDF opens in a new tab
 - Updated navy-blue and yellow Windows 7 Aero-inspired theme with glossy gradients, layered highlights, decorative circular motifs and depth.
 - Form and data-entry panels remain white / light grey for readability.
 - Footer heading: “Bansang Makabata, Batang Makabansa”; development credit and year updated.
+
+
+## Kiosk certificate printing
+The PDF opens inside an in-app overlay instead of navigating to a new browser tab. The kiosk remains on OneCSM. After printing, the client selects “Done — Return to Welcome”; the app displays a short thank-you message and resets to the welcome screen after 5 seconds.
