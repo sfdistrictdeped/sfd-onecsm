@@ -43,3 +43,31 @@ The PDF remains private in the existing Google Drive folder. The frontend reques
 
 ## Thank-you countdown
 After the kiosk user presses **Done — Return to Welcome**, OneCSM now displays a branded thank-you screen with a five-second visible countdown. The user can press **Return to Welcome Now** to skip the countdown. No Apps Script backend changes are needed for this frontend-only update.
+
+
+## Administrator Portal — Initial Implementation
+
+The public welcome screen includes an Administrator Portal button. The admin area provides:
+- Server-verified PIN sign-in (6–12 digits).
+- Server-side session tokens with a 30-minute inactivity timeout.
+- Overview metrics: registrations, completed responses, responses today, client type and sex distribution, recent responses.
+- Graphs & Measurements: SQD averages (excluding N/A), CC1–CC3 distributions, and service counts.
+- Logout invalidates the current session.
+
+### Configure the first administrator PIN
+1. Open the Apps Script editor.
+2. Select the function `setAdminPin` in the function dropdown.
+3. Replace the sample argument in the editor with your chosen PIN, for example:
+   `setAdminPin("YOUR-OWN-6-TO-12-DIGIT-PIN");`
+4. Run the function once and authorize it if prompted.
+5. Do not publish the PIN in GitHub or share it in frontend code.
+
+Only a SHA-256 hash is stored in Script Properties. Admin data endpoints require a valid server-issued session token.
+
+### Deployment
+- Replace the Apps Script `Code.gs` with `Apps-Script/Code.gs`.
+- Deploy a **New version** of the existing Web App deployment.
+- Keep Execute as: Me; Who has access: Anyone.
+- Replace GitHub Pages files with the contents under `GitHub-Pages/`.
+
+The Report Center is included as a navigation section, but official monthly/quarterly/annual Excel report generation and report history remain the next implementation phase.

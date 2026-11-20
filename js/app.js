@@ -7,6 +7,8 @@ let activeControlNumber = null;
 let certificateResult = null;
 let activeCertificateBlobUrl = null;
 let thankYouCountdownTimer = null;
+let adminSessionToken = null;
+let adminDashboardData = null;
 let currentSurveyPage = "client";
 
 const cc1Choices = [
@@ -83,7 +85,7 @@ function updateProceedButton(){
 function showScreen(id){
   const ids=["clientInformationScreen","csmScreen","certificateScreen"];
   ids.forEach(x=>document.getElementById(x).hidden=x!==id);
-  const welcome=["welcomeTitle","welcomeIntro","privacyPanel","consentRow","proceedButton","buttonHint","developmentNotice"];
+  const welcome=["welcomeTitle","welcomeIntro","privacyPanel","consentRow","proceedButton","buttonHint","developmentNotice","adminEntryButton"];
   welcome.forEach(x=>{const el=document.getElementById(x);if(el)el.hidden=id!=="welcome";});
   window.scrollTo({top:0,behavior:"instant"});
 }
@@ -386,10 +388,110 @@ async function retryCertificateGeneration(){
   finally{b.disabled=false;b.textContent="Retry Certificate Generation";}
 }
 
+
+function openAdminPin(){
+  document.getElementById("adminPinInput").value="";
+  document.getElementById("adminPinError").hidden=true;
+  document.getElementById("adminPinOverlay").hidden=false;
+  document.getElementById("adminPinInput").focus();
+}
+function closeAdminPin(){
+  document.getElementById("adminPinOverlay").hidden=true;
+}
+async function adminLogin(){
+  const pin=document.getElementById("adminPinInput").value.trim();
+  const error=document.getElementById("adminPinError");
+  error.hidden=true;
+  if(!/^\d{6,12}$/.test(pin)){
+    showError("adminPinError","Enter a valid 6–12 digit administrator PIN.");return;
+  }
+  const button=document.getElementById("adminLoginButton");
+  button.disabled=true;button.textContent="Verifying PIN…";
+  try{
+    const result=await apiRequest("adminLogin",{pin});
+    adminSessionToken=result.sessionToken;
+    closeAdminPin();
+    await loadAdminDashboard();
+    showAdminPortal("overview");
+  }catch(e){showError("adminPinError",e.message);}
+  finally{button.disabled=false;button.textContent="Unlock Admin Portal →";document.getElementById("adminPinInput").value="";}
+}
+async function loadAdminDashboard(){
+  if(!adminSessionToken)throw new Error("Admin session is not active.");
+  adminDashboardData=await apiRequest("adminDashboard",{sessionToken:adminSessionToken});
+  renderAdminDashboard(adminDashboardData);
+}
+function showAdminPortal(tab){
+  ["welcomeTitle","welcomeIntro","privacyPanel","consentRow","proceedButton","buttonHint","developmentNotice","adminEntryButton","clientInformationScreen","csmScreen","certificateScreen"].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.hidden=true;
+  });
+  document.getElementById("adminPortal").hidden=false;
+  setAdminTab(tab||"overview");
+  window.scrollTo({top:0,behavior:"instant"});
+}
+function setAdminTab(tab){
+  document.querySelectorAll(".admin-tab").forEach(b=>b.classList.toggle("active",b.dataset.adminTab===tab));
+  ["overview","analytics","reports"].forEach(name=>{
+    document.getElementById("adminPanel"+name[0].toUpperCase()+name.slice(1)).hidden=name!==tab;
+  });
+}
+function escapeAdminText(value){
+  return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function renderCountBars(targetId,data){
+  const target=document.getElementById(targetId);
+  const entries=Object.entries(data||{}).sort((a,b)=>b[1]-a[1]);
+  if(!entries.length){target.innerHTML='<p class="admin-empty">No responses recorded yet.</p>';return;}
+  const max=Math.max(...entries.map(x=>x[1]),1);
+  target.innerHTML=entries.map(([label,count])=>`<div class="admin-bar-row"><div class="admin-bar-label"><span>${escapeAdminText(label)}</span><strong>${count}</strong></div><div class="admin-bar-track"><span style="width:${count/max*100}%"></span></div></div>`).join("");
+}
+function renderAdminDashboard(data){
+  document.getElementById("adminGeneratedAt").textContent="Updated "+data.generatedAt;
+  const stats=[
+    ["Total Registrations",data.totalRegistrations,"users"],
+    ["Completed CSM Responses",data.totalResponses,"clipboard-check"],
+    ["Responses Today",data.todayResponses,"calendar-check"]
+  ];
+  document.getElementById("adminStatGrid").innerHTML=stats.map(([label,value])=>`<article class="admin-stat-card"><span>${label}</span><strong>${Number(value||0).toLocaleString()}</strong></article>`).join("");
+  renderCountBars("adminClientTypes",data.clientTypes);
+  renderCountBars("adminSex",data.sex);
+  const rows=data.recentResponses||[];
+  document.getElementById("adminRecentRows").innerHTML=rows.length?rows.map(r=>`<tr><td>${escapeAdminText(r.controlNumber)}</td><td>${escapeAdminText(r.date)}</td><td>${escapeAdminText(r.clientType)}</td><td>${escapeAdminText(r.service)}</td></tr>`).join(""):'<tr><td colspan="4">No responses recorded yet.</td></tr>';
+  const sqd=data.sqd||[];
+  document.getElementById("adminSqdChart").innerHTML=sqd.map(item=>{
+    const val=item.average==null?0:item.average;
+    return `<div class="admin-bar-row"><div class="admin-bar-label"><span>${item.dimension}</span><strong>${item.average==null?"—":item.average.toFixed(2)+" / 5"}</strong></div><div class="admin-bar-track"><span style="width:${val/5*100}%"></span></div><small>${item.responses} valid · ${item.notApplicable} N/A</small></div>`;
+  }).join("");
+  renderCountBars("adminCc1",data.cc?.CC1);
+  renderCountBars("adminCc2",data.cc?.CC2);
+  renderCountBars("adminCc3",data.cc?.CC3);
+  renderCountBars("adminServices",data.services);
+}
+async function refreshAdminDashboard(){
+  const button=document.getElementById("refreshAdminButton");
+  button.disabled=true;button.textContent="Refreshing…";
+  try{await loadAdminDashboard();}catch(e){alert(e.message);if(e.message.includes("expired"))adminLogout();}
+  finally{button.disabled=false;button.textContent="↻ Refresh";}
+}
+async function adminLogout(){
+  const token=adminSessionToken;
+  adminSessionToken=null;adminDashboardData=null;
+  document.getElementById("adminPortal").hidden=true;
+  if(token){try{await apiRequest("adminLogout",{sessionToken:token});}catch(e){}}
+  showScreen("welcome");
+}
+
 document.addEventListener("DOMContentLoaded",()=>{
   document.getElementById("clientInformationForm").addEventListener("submit",submitClientInformation);
   document.getElementById("csmForm").addEventListener("submit",submitCsm);
   document.getElementById("backToWelcomeButton").addEventListener("click",()=>showScreen("welcome"));
+  document.getElementById("adminEntryButton").addEventListener("click",openAdminPin);
+  document.getElementById("closeAdminPin").addEventListener("click",closeAdminPin);
+  document.getElementById("adminLoginButton").addEventListener("click",adminLogin);
+  document.getElementById("adminPinInput").addEventListener("keydown",e=>{if(e.key==="Enter")adminLogin();});
+  document.getElementById("adminLogoutButton").addEventListener("click",adminLogout);
+  document.getElementById("refreshAdminButton").addEventListener("click",refreshAdminDashboard);
+  document.querySelectorAll(".admin-tab").forEach(b=>b.addEventListener("click",()=>setAdminTab(b.dataset.adminTab)));
   document.getElementById("backToClientButton").addEventListener("click",()=>showSurveyPage("client"));
   document.getElementById("retryCertificateButton").addEventListener("click",retryCertificateGeneration);
   document.getElementById("openCertificateLink").addEventListener("click",openCertificatePreview);

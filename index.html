@@ -91,6 +91,10 @@
       <p class="button-hint" id="buttonHint">
         Please read the notice and provide your consent to continue.
       </p>
+      <button type="button" class="admin-entry-button" id="adminEntryButton">
+        <span aria-hidden="true">♙</span> Administrator Portal
+        <small>PIN protected</small>
+      </button>
 
       <div class="notice" id="developmentNotice" role="status"></div>
 
@@ -286,6 +290,68 @@
     </footer>
   </main>
 
+
+
+  <div class="admin-pin-overlay" id="adminPinOverlay" hidden>
+    <section class="admin-pin-dialog" role="dialog" aria-modal="true" aria-labelledby="adminPinTitle">
+      <button type="button" class="admin-close" id="closeAdminPin" aria-label="Close">×</button>
+      <div class="admin-lock-icon">♙</div>
+      <p class="admin-kicker">SAN FERNANDO DISTRICT OneCSM</p>
+      <h2 id="adminPinTitle">Administrator Access</h2>
+      <p>Enter your administrator PIN to continue.</p>
+      <input id="adminPinInput" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="12" placeholder="Enter PIN" autocomplete="off">
+      <div class="form-error" id="adminPinError" hidden role="alert"></div>
+      <button type="button" class="proceed-button" id="adminLoginButton">Unlock Admin Portal →</button>
+    </section>
+  </div>
+
+  <section class="admin-portal" id="adminPortal" hidden>
+    <header class="admin-portal-header">
+      <div>
+        <p class="admin-kicker">SAN FERNANDO DISTRICT OFFICE</p>
+        <h2>OneCSM Administration</h2>
+        <p>Management dashboard and client satisfaction insights</p>
+      </div>
+      <button type="button" class="secondary-button" id="adminLogoutButton">Logout</button>
+    </header>
+    <nav class="admin-tabs" aria-label="Administration sections">
+      <button class="admin-tab active" data-admin-tab="overview">Overview</button>
+      <button class="admin-tab" data-admin-tab="analytics">Graphs & Measurements</button>
+      <button class="admin-tab" data-admin-tab="reports">Report Center</button>
+    </nav>
+    <div class="admin-content">
+      <section class="admin-panel" id="adminPanelOverview">
+        <div class="admin-section-heading">
+          <div><h3>Management Overview</h3><p id="adminGeneratedAt">Loading dashboard…</p></div>
+          <button type="button" class="secondary-button" id="refreshAdminButton">↻ Refresh</button>
+        </div>
+        <div class="admin-stat-grid" id="adminStatGrid"></div>
+        <div class="admin-dashboard-grid">
+          <article class="admin-card"><h4>Client Types</h4><div id="adminClientTypes"></div></article>
+          <article class="admin-card"><h4>Sex Distribution</h4><div id="adminSex"></div></article>
+          <article class="admin-card admin-card-wide"><h4>Recent CSM Responses</h4><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Control No.</th><th>Date</th><th>Client Type</th><th>Service Availed</th></tr></thead><tbody id="adminRecentRows"></tbody></table></div></article>
+        </div>
+      </section>
+      <section class="admin-panel" id="adminPanelAnalytics" hidden>
+        <div class="admin-section-heading"><div><h3>Graphs & Measurements</h3><p>Summary of Citizen's Charter and Service Quality Dimensions</p></div></div>
+        <div class="admin-dashboard-grid">
+          <article class="admin-card admin-card-wide"><h4>SQD Average Ratings</h4><div id="adminSqdChart"></div><p class="admin-note">Scale: 1 (Strongly Disagree) to 5 (Strongly Agree). N/A responses are excluded.</p></article>
+          <article class="admin-card"><h4>CC1 — Awareness</h4><div id="adminCc1"></div></article>
+          <article class="admin-card"><h4>CC2 — Visibility</h4><div id="adminCc2"></div></article>
+          <article class="admin-card"><h4>CC3 — Helpfulness</h4><div id="adminCc3"></div></article>
+          <article class="admin-card admin-card-wide"><h4>Most Availed Services</h4><div id="adminServices"></div></article>
+        </div>
+      </section>
+      <section class="admin-panel" id="adminPanelReports" hidden>
+        <div class="admin-section-heading"><div><h3>Report Center</h3><p>Reporting tools for official CSM submissions</p></div></div>
+        <article class="admin-card report-coming-soon">
+          <div class="admin-lock-icon">▤</div><h4>Official CSM Report Generation</h4>
+          <p>Monthly, quarterly, and annual reports using the official CSM template will be configured in the next implementation phase.</p>
+          <p class="admin-note">The dashboard and analytics are already reading from the existing OneCSM database.</p>
+        </article>
+      </section>
+    </div>
+  </section>
 
   <div class="thank-you-overlay" id="thankYouOverlay" hidden>
     <section class="thank-you-dialog" role="dialog" aria-modal="true" aria-labelledby="thankYouTitle">
