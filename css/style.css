@@ -785,3 +785,25 @@ input:focus,textarea:focus,.picker-button:focus-visible{
  .admin-tabs{overflow-x:auto}
  .admin-tab{white-space:nowrap;padding:10px 12px;font-size:12px}
 }
+
+
+/* Admin mode: replace the kiosk shell and use the full browser viewport. */
+body.admin-mode{
+  display:block;
+  min-height:100vh;
+  padding:20px;
+  align-items:initial;
+  justify-content:initial;
+}
+body.admin-mode .app-shell{display:none!important}
+body.admin-mode .admin-portal{
+  display:block;
+  width:min(1400px,100%);
+  min-height:calc(100vh - 40px);
+  margin:0 auto;
+}
+body.admin-mode .admin-portal[hidden]{display:none!important}
+@media(max-width:720px){
+  body.admin-mode{padding:8px}
+  body.admin-mode .admin-portal{width:100%;min-height:calc(100vh - 16px);margin:0}
+}

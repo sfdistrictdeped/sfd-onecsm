@@ -422,6 +422,8 @@ async function loadAdminDashboard(){
   renderAdminDashboard(adminDashboardData);
 }
 function showAdminPortal(tab){
+  document.body.classList.add("admin-mode");
+  document.querySelector(".app-shell").hidden=true;
   ["welcomeTitle","welcomeIntro","privacyPanel","consentRow","proceedButton","buttonHint","developmentNotice","adminEntryButton","clientInformationScreen","csmScreen","certificateScreen"].forEach(id=>{
     const el=document.getElementById(id);if(el)el.hidden=true;
   });
@@ -475,6 +477,8 @@ async function refreshAdminDashboard(){
 }
 async function adminLogout(){
   const token=adminSessionToken;
+  document.body.classList.remove("admin-mode");
+  document.querySelector(".app-shell").hidden=false;
   adminSessionToken=null;adminDashboardData=null;
   document.getElementById("adminPortal").hidden=true;
   if(token){try{await apiRequest("adminLogout",{sessionToken:token});}catch(e){}}
