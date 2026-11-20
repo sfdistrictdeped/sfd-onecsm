@@ -854,3 +854,65 @@ body.admin-mode .admin-portal[hidden]{display:none!important}
 .branded-picker-option.selected,.branded-picker-option:hover{border-color:#c39a00;background:linear-gradient(180deg,#fffdf3,#fff4c7);box-shadow:0 0 0 2px rgba(255,207,0,.13)}
 .branded-picker-option.selected .picker-option-index{background:linear-gradient(180deg,#ffdf58,#ffc900);color:#142944}
 @media(max-width:600px){.branded-select{min-height:68px}.picker-dialog{padding:15px}.branded-picker-option{grid-template-columns:32px minmax(0,1fr) 15px;padding:9px}.picker-option-label{font-size:12px}}
+
+
+/* Global modal layers: render above every screen and the footer. */
+.picker-overlay{
+  position:fixed !important;
+  inset:0 !important;
+  z-index:100000 !important;
+  align-items:center;
+  justify-content:center;
+  padding:clamp(10px,2vh,22px);
+  overflow:hidden;
+  background:rgba(8,17,29,.58);
+  backdrop-filter:blur(5px);
+}
+.picker-dialog{
+  width:min(100%,560px);
+  max-height:calc(100dvh - 36px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+}
+.transition-loading-overlay{
+  position:fixed;
+  inset:0;
+  z-index:110000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(8,18,32,.72);
+  backdrop-filter:blur(6px);
+}
+.transition-loading-overlay[hidden]{display:none}
+.transition-loading-card{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:12px;
+  width:min(90vw,340px);
+  padding:30px 26px;
+  border:1px solid rgba(255,255,255,.9);
+  border-radius:22px;
+  background:linear-gradient(180deg,#fff,#edf2f8);
+  color:#142944;
+  text-align:center;
+  box-shadow:0 2px 0 #fff inset,0 24px 70px rgba(0,0,0,.35);
+}
+.transition-loading-card strong{font-size:17px;font-weight:850}
+.transition-loading-card span{color:#64748b;font-size:13px;line-height:1.45}
+.transition-spinner{
+  width:54px;height:54px;border-radius:50%;
+  border:5px solid #dce5ef;
+  border-top-color:#ffcf00;
+  border-right-color:#142944;
+  animation:onecsm-spin .8s linear infinite;
+  box-shadow:0 0 0 4px rgba(255,207,0,.12);
+}
+@keyframes onecsm-spin{to{transform:rotate(360deg)}}
+body.loading-active{overflow:hidden}
+@media(prefers-reduced-motion:reduce){
+  .transition-spinner{animation-duration:2s}
+}

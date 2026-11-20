@@ -142,6 +142,27 @@ function updateProceedButton(){
     :apiOnline?"Thank you. You may now proceed.":"Waiting for a connection to the OneCSM server.";
 }
 
+function showTransitionLoading(title="Please wait…", message="Preparing the next page."){
+  const overlay=document.getElementById("transitionLoadingOverlay");
+  document.getElementById("transitionLoadingTitle").textContent=title;
+  document.getElementById("transitionLoadingMessage").textContent=message;
+  overlay.hidden=false;
+  document.body.classList.add("loading-active");
+}
+function hideTransitionLoading(){
+  const overlay=document.getElementById("transitionLoadingOverlay");
+  if(overlay)overlay.hidden=true;
+  document.body.classList.remove("loading-active");
+}
+function delay(ms){return new Promise(resolve=>setTimeout(resolve,ms));}
+async function transitionSurveyPage(page,title="Loading next page…"){
+  showTransitionLoading(title,"Please wait while the next section is prepared.");
+  await delay(300);
+  showSurveyPage(page);
+  await delay(180);
+  hideTransitionLoading();
+}
+
 function showScreen(id){
   const ids=["clientInformationScreen","csmScreen","certificateScreen"];
   ids.forEach(x=>document.getElementById(x).hidden=x!==id);
@@ -332,11 +353,13 @@ async function submitCsm(event){
   };
   for(let i=0;i<9;i++)data[`sqd${i}`]=selected(`sqd${i}`);
   setBusy("submitCsmButton",true,"Submitting survey…","Submit Survey ✓");
+  showTransitionLoading("Submitting your survey…","Saving your responses and preparing your Certificate of Appearance.");
   try{
     await apiRequest("submitCSMResponse",data);
     displayCertificateResult(certificateResult);showScreen("certificateScreen");
+    await delay(250);
   }catch(e){showError("feedbackPageError",e.message);}
-  finally{setBusy("submitCsmButton",false,"Submitting survey…","Submit Survey ✓");}
+  finally{hideTransitionLoading();setBusy("submitCsmButton",false,"Submitting survey…","Submit Survey ✓");}
 }
 
 function displayCertificateResult(result){
@@ -415,6 +438,7 @@ async function openCertificatePreview(){
   button.disabled=true;
   const originalText=button.textContent;
   button.textContent="Preparing certificate…";
+  showTransitionLoading("Preparing Certificate of Appearance…","Generating the PDF for viewing and printing.");
   try{
     const pdfData=await apiRequest("getAppearancePdf",{
       controlNumber:activeControlNumber,
@@ -431,6 +455,7 @@ async function openCertificatePreview(){
   }catch(error){
     showError("certificateError",error.message);
   }finally{
+    hideTransitionLoading();
     button.disabled=false;
     button.textContent=originalText;
   }
@@ -631,6 +656,7 @@ async function adminLogout(){
   showScreen("welcome");
 }
 
+document.addEventListener("contextmenu",event=>event.preventDefault());
 document.addEventListener("DOMContentLoaded",()=>{
   document.getElementById("clientInformationForm").addEventListener("submit",submitClientInformation);
   document.getElementById("csmForm").addEventListener("submit",submitCsm);
@@ -654,12 +680,12 @@ document.addEventListener("DOMContentLoaded",()=>{
   document.getElementById("closeCertificatePreview").addEventListener("click",closeCertificatePreview);
   document.getElementById("finishCertificateButton").addEventListener("click",finishCertificateAndReset);
   document.getElementById("skipThankYouCountdown").addEventListener("click",completeThankYouAndReset);
-  document.getElementById("clientToCcButton").addEventListener("click",()=>{if(validateClientPage())showSurveyPage("cc");});
-  document.getElementById("ccBackButton").addEventListener("click",()=>showSurveyPage("client"));
-  document.getElementById("ccToSqdButton").addEventListener("click",()=>{if(validateCcPage())showSurveyPage("sqd");});
-  document.getElementById("sqdBackButton").addEventListener("click",()=>showSurveyPage("cc"));
-  document.getElementById("sqdToFeedbackButton").addEventListener("click",()=>{if(validateSqdPage())showSurveyPage("feedback");});
-  document.getElementById("feedbackBackButton").addEventListener("click",()=>showSurveyPage("sqd"));
+  document.getElementById("clientToCcButton").addEventListener("click",async()=>{if(validateClientPage())await transitionSurveyPage("cc","Loading Citizen’s Charter…");});
+  document.getElementById("ccBackButton").addEventListener("click",()=>transitionSurveyPage("client","Returning to client information…"));
+  document.getElementById("ccToSqdButton").addEventListener("click",async()=>{if(validateCcPage())await transitionSurveyPage("sqd","Loading service quality questions…");});
+  document.getElementById("sqdBackButton").addEventListener("click",()=>transitionSurveyPage("cc","Returning to Citizen’s Charter…"));
+  document.getElementById("sqdToFeedbackButton").addEventListener("click",async()=>{if(validateSqdPage())await transitionSurveyPage("feedback","Loading feedback page…");});
+  document.getElementById("feedbackBackButton").addEventListener("click",()=>transitionSurveyPage("sqd","Returning to service quality questions…"));
   document.getElementById("clientTypePicker").addEventListener("click",()=>openPicker("clientType"));
   document.getElementById("sexPicker").addEventListener("click",()=>openPicker("sex"));
   document.getElementById("officeAvailedPicker").addEventListener("click",()=>openOfficeServicePicker("officeAvailed"));
