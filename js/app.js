@@ -196,14 +196,17 @@ async function submitClientInformation(event){
   };
   if(!data.consentGiven)return showError("formError","Consent is required before submitting.");
   setBusy("submitClientButton",true,"Saving client information…","Continue to CSM Survey →");
+  showTransitionLoading("Saving client information…","Please wait while we register your visit and prepare the survey.");
   try{
     const result=await apiRequest("startClientTransaction",data);
     activeControlNumber=result.controlNumber; certificateResult=result;
     setTodayDate();
     showScreen("csmScreen"); showSurveyPage("client");
+    await delay(250);
   }catch(e){
     showError("formError",e.message+" If unsure whether the record was saved, contact the office before trying again.");
   }finally{
+    hideTransitionLoading();
     setBusy("submitClientButton",false,"Saving client information…","Continue to CSM Survey →");
   }
 }
@@ -357,9 +360,33 @@ async function submitCsm(event){
   try{
     await apiRequest("submitCSMResponse",data);
     displayCertificateResult(certificateResult);showScreen("certificateScreen");
+    playAppearanceEntryDing();
     await delay(250);
   }catch(e){showError("feedbackPageError",e.message);}
   finally{hideTransitionLoading();setBusy("submitCsmButton",false,"Submitting survey…","Submit Survey ✓");}
+}
+
+function playAppearanceEntryDing(){
+  try{
+    const AudioCtx=window.AudioContext||window.webkitAudioContext;
+    if(!AudioCtx)return;
+    const ctx=new AudioCtx();
+    const now=ctx.currentTime;
+    [880,1174.66].forEach((frequency,index)=>{
+      const start=now+index*0.13;
+      const oscillator=ctx.createOscillator();
+      const gain=ctx.createGain();
+      oscillator.type="sine";
+      oscillator.frequency.setValueAtTime(frequency,start);
+      gain.gain.setValueAtTime(0.0001,start);
+      gain.gain.exponentialRampToValueAtTime(0.12,start+0.025);
+      gain.gain.exponentialRampToValueAtTime(0.0001,start+0.24);
+      oscillator.connect(gain);gain.connect(ctx.destination);
+      oscillator.start(start);
+      oscillator.stop(start+0.26);
+    });
+    window.setTimeout(()=>ctx.close().catch(()=>{}),700);
+  }catch(error){/* Optional sound must never interrupt the certificate workflow. */}
 }
 
 function displayCertificateResult(result){
@@ -470,6 +497,26 @@ function closeCertificatePreview(){
   }
 }
 
+function playThankYouVoice(){
+  if(!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window))return;
+  try{
+    window.speechSynthesis.cancel();
+    const utterance=new SpeechSynthesisUtterance("Thank You! Have a nice day!");
+    utterance.lang="en-US";
+    utterance.rate=0.94;
+    utterance.pitch=1.12;
+    utterance.volume=1;
+
+    const voices=window.speechSynthesis.getVoices();
+    const femaleVoicePattern=/female|samantha|victoria|zira|aria|jenny|susan|karen|moira|tessa|ava|allison|siri/i;
+    const englishVoices=voices.filter(voice=>/^en(-|_)/i.test(voice.lang));
+    const preferred=englishVoices.find(voice=>femaleVoicePattern.test(voice.name))
+      || voices.find(voice=>femaleVoicePattern.test(voice.name));
+    if(preferred)utterance.voice=preferred;
+    window.speechSynthesis.speak(utterance);
+  }catch(error){/* Voice greeting is optional; do not interrupt the kiosk reset. */}
+}
+
 function finishCertificateAndReset(){
   closeCertificatePreview();
 
@@ -485,6 +532,7 @@ function finishCertificateAndReset(){
   let secondsRemaining=5;
   counter.textContent=secondsRemaining;
   overlay.hidden=false;
+  playThankYouVoice();
   skipButton.focus();
 
   thankYouCountdownTimer=window.setInterval(()=>{
