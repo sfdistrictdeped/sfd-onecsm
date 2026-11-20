@@ -71,3 +71,9 @@ Only a SHA-256 hash is stored in Script Properties. Admin data endpoints require
 - Replace GitHub Pages files with the contents under `GitHub-Pages/`.
 
 The Report Center is included as a navigation section, but official monthly/quarterly/annual Excel report generation and report history remain the next implementation phase.
+
+## Kiosk restrictions and uppercase collection fields
+- Common browser inspection/source shortcuts are suppressed: F12, Ctrl/Command+Shift+I/J/C/K, and Ctrl/Command+U. Right-click is also disabled.
+- This is a frontend deterrent only. Configure the browser and operating system in kiosk mode to restrict browser menus, settings, and escape routes; JavaScript cannot guarantee that Developer Tools are inaccessible.
+- Free-text collection fields (name, school/agency, purpose, address/region, and suggestions) are automatically converted to uppercase. The backend also normalizes the relevant text fields, including selected office and service, before saving.
+- Email addresses remain as entered to avoid altering a contact address.

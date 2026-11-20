@@ -704,7 +704,21 @@ async function adminLogout(){
   showScreen("welcome");
 }
 
+// Kiosk deterrent: suppress common browser inspection/source shortcuts.
+// This is not a security boundary; use the browser/OS kiosk configuration too.
 document.addEventListener("contextmenu",event=>event.preventDefault());
+document.addEventListener("keydown",event=>{
+  const key=String(event.key||"").toLowerCase();
+  const modifier=event.ctrlKey||event.metaKey;
+  const blocked = key==="f12" ||
+    (modifier && event.shiftKey && ["i","j","c","k"].includes(key)) ||
+    (modifier && key==="u");
+  if(blocked){
+    event.preventDefault();
+    event.stopPropagation();
+    if(typeof event.stopImmediatePropagation==="function")event.stopImmediatePropagation();
+  }
+},true);
 document.addEventListener("DOMContentLoaded",()=>{
   document.getElementById("clientInformationForm").addEventListener("submit",submitClientInformation);
   document.getElementById("csmForm").addEventListener("submit",submitCsm);
@@ -745,7 +759,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   renderChoices("cc3Options","cc3",cc3Choices);
   document.getElementById("cc1Options").addEventListener("change",handleCC1Change);
   renderAllSqdQuestions();
-  ["fullName","schoolOrAgency","purpose"].forEach(id=>document.getElementById(id).addEventListener("input",e=>{
+  ["fullName","schoolOrAgency","purpose","address","suggestions"].forEach(id=>document.getElementById(id).addEventListener("input",e=>{
     const a=e.target.selectionStart,b=e.target.selectionEnd;e.target.value=e.target.value.toUpperCase();
     try{e.target.setSelectionRange(a,b);}catch(_){}
   }));
