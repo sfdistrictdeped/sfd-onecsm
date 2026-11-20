@@ -807,3 +807,21 @@ body.admin-mode .admin-portal[hidden]{display:none!important}
   body.admin-mode{padding:8px}
   body.admin-mode .admin-portal{width:100%;min-height:calc(100vh - 16px);margin:0}
 }
+
+
+/* Admin PIN verification and report center */
+.admin-loading-overlay{position:fixed;inset:0;z-index:10050;background:rgba(9,20,36,.72);backdrop-filter:blur(7px);display:flex;align-items:center;justify-content:center;padding:20px}
+.admin-loading-overlay[hidden]{display:none!important}
+.admin-loading-dialog{width:min(390px,100%);padding:34px 28px;text-align:center;background:linear-gradient(145deg,#fff,#edf2f8);border:1px solid rgba(255,255,255,.9);border-top:5px solid #ffcf00;border-radius:22px;box-shadow:0 24px 70px rgba(0,0,0,.35);color:#172b46}
+.admin-loading-dialog h3{margin:20px 0 8px;font-size:20px}.admin-loading-dialog p{margin:0;color:#65758d}
+.admin-loading-spinner{width:54px;height:54px;margin:0 auto;border:5px solid #d9e1ec;border-top-color:#e2b900;border-right-color:#172b46;border-radius:50%;animation:onecsmAdminSpin .8s linear infinite}
+@keyframes onecsmAdminSpin{to{transform:rotate(360deg)}}
+.report-form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:20px 0}
+.report-form-grid label{display:flex;flex-direction:column;gap:7px;font-weight:700;color:#304763}
+.report-form-grid select,.report-form-grid input{width:100%;min-height:44px;border:1px solid #cbd6e4;border-radius:10px;padding:9px 12px;background:#fff;color:#172b46;font:inherit}
+.report-period-hint{padding:11px 14px;background:#fff8d8;border:1px solid #f1d66a;border-radius:10px;color:#65531a;font-size:13px}
+.report-actions{margin-top:16px}.report-actions button{max-width:360px}
+.report-success{margin-top:14px;padding:12px 14px;background:#e8f6ed;border:1px solid #a7d9b7;color:#1d6335;border-radius:10px}
+.report-history-card{margin-top:18px}.report-history-card .secondary-button{margin-top:14px}
+.admin-table a{color:#174d83;font-weight:700;text-decoration:underline}
+@media(max-width:700px){.report-form-grid{grid-template-columns:1fr}}

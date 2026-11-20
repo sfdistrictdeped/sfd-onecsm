@@ -402,19 +402,27 @@ async function adminLogin(){
   const pin=document.getElementById("adminPinInput").value.trim();
   const error=document.getElementById("adminPinError");
   error.hidden=true;
-  if(!/^\d{6,12}$/.test(pin)){
-    showError("adminPinError","Enter a valid 6–12 digit administrator PIN.");return;
-  }
+  if(!/^\d{6,12}$/.test(pin)){showError("adminPinError","Enter a valid 6–12 digit administrator PIN.");return;}
   const button=document.getElementById("adminLoginButton");
-  button.disabled=true;button.textContent="Verifying PIN…";
+  button.disabled=true;
+  document.getElementById("adminLoadingTitle").textContent="Verifying administrator PIN…";
+  document.getElementById("adminLoadingMessage").textContent="Please wait while we securely check your access.";
+  document.getElementById("adminLoadingOverlay").hidden=false;
   try{
     const result=await apiRequest("adminLogin",{pin});
     adminSessionToken=result.sessionToken;
-    closeAdminPin();
+    document.getElementById("adminLoadingTitle").textContent="Access verified";
+    document.getElementById("adminLoadingMessage").textContent="Preparing your management dashboard…";
     await loadAdminDashboard();
+    closeAdminPin();
     showAdminPortal("overview");
-  }catch(e){showError("adminPinError",e.message);}
-  finally{button.disabled=false;button.textContent="Unlock Admin Portal →";document.getElementById("adminPinInput").value="";}
+    await loadReportHistory();
+  }catch(e){
+    showError("adminPinError",e.message);
+  }finally{
+    document.getElementById("adminLoadingOverlay").hidden=true;
+    button.disabled=false;document.getElementById("adminPinInput").value="";
+  }
 }
 async function loadAdminDashboard(){
   if(!adminSessionToken)throw new Error("Admin session is not active.");
@@ -475,6 +483,41 @@ async function refreshAdminDashboard(){
   try{await loadAdminDashboard();}catch(e){alert(e.message);if(e.message.includes("expired"))adminLogout();}
   finally{button.disabled=false;button.textContent="↻ Refresh";}
 }
+function updateReportPeriodControls(){
+  const type=document.getElementById("reportPeriodType").value;
+  document.getElementById("reportMonthWrap").hidden=type!=="monthly";
+  document.getElementById("reportQuarterWrap").hidden=type!=="quarterly";
+}
+function downloadBase64File(base64,mimeType,fileName){
+  const binary=atob(base64), bytes=new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+  const blob=new Blob([bytes],{type:mimeType||"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+  const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=fileName||"OneCSM_CSM_Report.xlsx";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+async function generateAdminReport(){
+  const button=document.getElementById("generateReportButton"),error=document.getElementById("reportError"),success=document.getElementById("reportSuccess");
+  error.hidden=true;success.hidden=true;button.disabled=true;button.textContent="Generating report…";
+  try{
+    const type=document.getElementById("reportPeriodType").value;
+    const data={sessionToken:adminSessionToken,periodType:type,year:Number(document.getElementById("reportYear").value)};
+    if(type==="monthly")data.month=Number(document.getElementById("reportMonth").value);
+    if(type==="quarterly")data.quarter=Number(document.getElementById("reportQuarter").value);
+    const result=await apiRequest("generateAdminReport",data);
+    downloadBase64File(result.base64,result.mimeType,result.fileName);
+    success.hidden=false;success.textContent=`${result.periodLabel} report generated successfully. ${result.recordCount} CSM responses included. The Excel file has been downloaded and saved to Google Drive.`;
+    await loadReportHistory();
+  }catch(e){showError("reportError",e.message);}
+  finally{button.disabled=false;button.textContent="Generate & Download Excel Report";}
+}
+async function loadReportHistory(){
+  const target=document.getElementById("reportHistoryRows");
+  if(!adminSessionToken)return;
+  target.innerHTML='<tr><td colspan="4">Loading report history…</td></tr>';
+  try{
+    const items=await apiRequest("adminReportHistory",{sessionToken:adminSessionToken});
+    target.innerHTML=items.length?items.map(x=>`<tr><td>${escapeAdminText(x.periodLabel)}</td><td>${escapeAdminText(x.periodType)}</td><td>${escapeAdminText(x.generatedAt)}</td><td><a href="${escapeAdminText(x.fileUrl)}" target="_blank" rel="noopener">Open Excel report ↗</a></td></tr>`).join(""):'<tr><td colspan="4">No reports generated yet.</td></tr>';
+  }catch(e){target.innerHTML=`<tr><td colspan="4">${escapeAdminText(e.message)}</td></tr>`;}
+}
 async function adminLogout(){
   const token=adminSessionToken;
   document.body.classList.remove("admin-mode");
@@ -495,6 +538,12 @@ document.addEventListener("DOMContentLoaded",()=>{
   document.getElementById("adminPinInput").addEventListener("keydown",e=>{if(e.key==="Enter")adminLogin();});
   document.getElementById("adminLogoutButton").addEventListener("click",adminLogout);
   document.getElementById("refreshAdminButton").addEventListener("click",refreshAdminDashboard);
+  document.getElementById("reportYear").value=new Date().getFullYear();
+  document.getElementById("reportMonth").value=String(new Date().getMonth()+1);
+  document.getElementById("reportPeriodType").addEventListener("change",updateReportPeriodControls);
+  document.getElementById("generateReportButton").addEventListener("click",generateAdminReport);
+  document.getElementById("refreshReportHistoryButton").addEventListener("click",loadReportHistory);
+  updateReportPeriodControls();
   document.querySelectorAll(".admin-tab").forEach(b=>b.addEventListener("click",()=>setAdminTab(b.dataset.adminTab)));
   document.getElementById("backToClientButton").addEventListener("click",()=>showSurveyPage("client"));
   document.getElementById("retryCertificateButton").addEventListener("click",retryCertificateGeneration);

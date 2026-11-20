@@ -305,6 +305,14 @@
     </section>
   </div>
 
+  <div class="admin-loading-overlay" id="adminLoadingOverlay" hidden aria-live="assertive" aria-busy="true">
+    <section class="admin-loading-dialog" role="status">
+      <div class="admin-loading-spinner" aria-hidden="true"></div>
+      <h3 id="adminLoadingTitle">Verifying administrator PIN…</h3>
+      <p id="adminLoadingMessage">Please wait while we securely check your access.</p>
+    </section>
+  </div>
+
   <section class="admin-portal" id="adminPortal" hidden>
     <header class="admin-portal-header">
       <div>
@@ -344,11 +352,21 @@
       </section>
       <section class="admin-panel" id="adminPanelReports" hidden>
         <div class="admin-section-heading"><div><h3>Report Center</h3><p>Reporting tools for official CSM submissions</p></div></div>
-        <article class="admin-card report-coming-soon">
-          <div class="admin-lock-icon">▤</div><h4>Official CSM Report Generation</h4>
-          <p>Monthly, quarterly, and annual reports using the official CSM template will be configured in the next implementation phase.</p>
-          <p class="admin-note">The dashboard and analytics are already reading from the existing OneCSM database.</p>
+        <article class="admin-card report-controls-card">
+          <h4>Generate Official CSM Report</h4>
+          <p class="admin-note">Reports use the official 85-column SFD CSM template. The original template is preserved.</p>
+          <div class="report-form-grid">
+            <label>Report period<select id="reportPeriodType"><option value="monthly">Monthly</option><option value="quarterly">Quarterly</option><option value="annual">Annual</option></select></label>
+            <label>Year<input id="reportYear" type="number" min="2000" max="2100"></label>
+            <label id="reportMonthWrap">Month<select id="reportMonth"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select></label>
+            <label id="reportQuarterWrap" hidden>Quarter<select id="reportQuarter"><option value="1">Q1 · January–March</option><option value="2">Q2 · April–June</option><option value="3">Q3 · July–September</option><option value="4">Q4 · October–December</option></select></label>
+          </div>
+          <div class="report-period-hint" id="reportPeriodHint">Select a completed reporting period. Future periods cannot be generated.</div>
+          <div class="report-actions"><button type="button" class="proceed-button" id="generateReportButton">Generate & Download Excel Report</button></div>
+          <div class="form-error" id="reportError" hidden role="alert"></div>
+          <div class="report-success" id="reportSuccess" hidden role="status"></div>
         </article>
+        <article class="admin-card report-history-card"><h4>Generated Report History</h4><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Period</th><th>Type</th><th>Generated</th><th>File</th></tr></thead><tbody id="reportHistoryRows"><tr><td colspan="4">Loading report history…</td></tr></tbody></table></div><button type="button" class="secondary-button" id="refreshReportHistoryButton">↻ Refresh History</button></article>
       </section>
     </div>
   </section>
