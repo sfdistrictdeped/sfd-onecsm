@@ -21,6 +21,66 @@ const cc2Choices = ["Easy to see","Somewhat easy to see","Difficult to see","Not
 const cc3Choices = ["Helped very much","Somewhat helped","Did not help","N/A"];
 const clientTypeChoices = ["Citizen","Business","Government (Employee or another agency)"];
 const sexChoices = ["Male","Female"];
+
+// Office must be selected before its corresponding service list is enabled.
+const officeServiceCatalog = {
+  "Office of the PSDS": [
+    "General inquiries and consultation with the Public Schools District Supervisor",
+    "School heads' concerns and referrals",
+    "School administration and governance assistance",
+    "Curriculum implementation supervision and coordination",
+    "Instructional supervision and technical assistance",
+    "School monitoring and evaluation coordination",
+    "School improvement and development planning assistance",
+    "Endorsement and routing of school concerns",
+    "Meetings, conferences, and appointment requests",
+    "Other PSDS-related concerns"
+  ],
+  "Office of the District Property Coordinator": [
+    "Issuance and distribution of school supplies", "Request for office and school supplies",
+    "Property issuance and acknowledgment", "Property inventory assistance",
+    "Property transfer and accountability documentation", "Property inspection and verification",
+    "Unserviceable property reporting", "Property return and disposal coordination", "Property-related inquiries"
+  ],
+  "Office of the District ICT Coordinator": [
+    "ICT technical assistance and troubleshooting", "Computer, printer, and peripheral concerns",
+    "Internet and network connectivity assistance", "Software installation and configuration assistance",
+    "ICT equipment assessment and monitoring", "School ICT inventory and reporting assistance",
+    "Digital platforms and applications assistance", "ICT-related training and orientation", "ICT-related inquiries"
+  ],
+  "Office of the District Human Resources and Personnel Coordinator": [
+    "Personnel records and information assistance", "Service record requests and processing assistance",
+    "Leave application assistance", "Personnel movement and transfer inquiries",
+    "Appointment and employment document assistance", "Promotion and ranking requirements assistance",
+    "Retirement and benefits inquiries", "Personnel data updating and verification", "HR-related inquiries and referrals"
+  ],
+  "Office of the District Physical Facilities Coordinator": [
+    "School building and facilities concerns", "School repair and maintenance requests",
+    "Facilities inspection and assessment coordination", "Infrastructure project monitoring",
+    "School building condition reporting", "Water, sanitation, and electrical facilities concerns",
+    "Classroom and school facility improvement assistance", "Disaster-related facilities assessment coordination",
+    "Physical facilities-related inquiries"
+  ],
+  "Office of the District Information and Social Media Coordinator": [
+    "Submission of school news and accomplishments", "School activity documentation and coverage requests",
+    "Publication and information dissemination assistance", "Official district announcements and advisories",
+    "Social media content submission", "Photo and video documentation coordination",
+    "School information and publicity assistance", "Information verification and correction requests",
+    "Media and communication-related inquiries"
+  ],
+  "Office of the District General Services Coordinator": [
+    "General office inquiries and assistance", "Receiving and routing of official communications",
+    "Office supplies and logistical assistance", "Meeting and activity logistical coordination",
+    "Transportation and utility-related coordination", "General maintenance and office support requests",
+    "Coordination of district activities and events", "General services-related concerns"
+  ],
+  "Office of the District Records Coordinator": [
+    "Receiving and recording of incoming documents", "Releasing and claiming of documents",
+    "Document tracking and follow-up", "Records verification and retrieval",
+    "Filing and archiving inquiries", "Certified true copy requests, where authorized",
+    "Records correction and updating assistance", "Document routing and endorsement", "Records-related inquiries"
+  ]
+};
 const sqdQuestions = [
  "I am satisfied with the service that I availed.",
  "I spent a reasonable amount of time for my transaction.",
@@ -165,6 +225,43 @@ function openPicker(type){
     });
   });
 }
+function openOfficeServicePicker(type){
+  const officeField=document.getElementById("officeAvailed");
+  const serviceField=document.getElementById("serviceAvailed");
+  const isOffice=type==="officeAvailed";
+  if(!isOffice&&!officeField.value)return;
+  const choices=isOffice?Object.keys(officeServiceCatalog):officeServiceCatalog[officeField.value];
+  const title=isOffice?"Select Office Availed":"Select Service Availed";
+  const subtitle=isOffice?"Choose the district office you visited.":`Services under ${officeField.value}.`;
+  document.getElementById("pickerTitle").textContent=title;
+  const options=document.getElementById("pickerOptions");
+  options.innerHTML=`<div class="branded-picker-intro"><span class="picker-crest">${isOffice?"▦":"✓"}</span><div><strong>${title}</strong><small>${escapeAdminText(subtitle)}</small></div></div>`+
+    choices.map((value,index)=>`<button type="button" class="picker-option branded-picker-option ${((isOffice?officeField:serviceField).value===value)?"selected":""}" data-value="${escapePickerValue(value)}"><span class="picker-option-index">${String(index+1).padStart(2,"0")}</span><span class="picker-option-label">${escapeAdminText(value)}</span><span class="picker-option-arrow">›</span></button>`).join("");
+  document.getElementById("pickerOverlay").hidden=false;
+  options.querySelectorAll(".branded-picker-option").forEach(button=>button.addEventListener("click",()=>{
+    const value=button.dataset.value;
+    if(isOffice){
+      officeField.value=value;
+      setBrandedPickerValue("officeAvailedPicker",value,"▦","Choose an office","Select the office you visited first");
+      serviceField.value="";
+      const serviceButton=document.getElementById("serviceAvailedPicker");
+      serviceButton.disabled=false;serviceButton.classList.remove("is-disabled");
+      setBrandedPickerValue("serviceAvailedPicker","","✓","Choose a service","Select a service from this office");
+    }else{
+      serviceField.value=value;
+      setBrandedPickerValue("serviceAvailedPicker",value,"✓","Choose a service",officeField.value);
+    }
+    document.getElementById("pickerOverlay").hidden=true;
+  }));
+}
+function escapePickerValue(value){return String(value).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function setBrandedPickerValue(id,value,icon,placeholder,detail){
+  const button=document.getElementById(id);
+  const strong=button.querySelector(".select-copy strong"),small=button.querySelector(".select-copy small");
+  strong.textContent=value||placeholder;small.textContent=value?detail:(id==="serviceAvailedPicker"&&!document.getElementById("officeAvailed").value?"Select an office above to view its services":detail);
+  button.classList.toggle("has-value",!!value);
+}
+
 function selected(name){return document.querySelector(`input[name="${name}"]:checked`)?.value||"";}
 
 function renderChoices(containerId,name,choices){
@@ -191,7 +288,7 @@ function renderAllSqdQuestions(){
 }
 
 function validateClientPage(){
-  const required=[["clientType","Please select your client type."],["sex","Please select your sex."],["age","Please enter your age."],["address","Please enter your address."],["serviceAvailed","Please enter the service you availed."]];
+  const required=[["clientType","Please select your client type."],["sex","Please select your sex."],["age","Please enter your age."],["address","Please enter your address."],["officeAvailed","Please select the office you visited."],["serviceAvailed","Please select the service you availed."]];
   for(const [id,message] of required){
     const el=document.getElementById(id);
     if(!String(el.value).trim()){showError("clientPageError",message);return false;}
@@ -227,6 +324,7 @@ async function submitCsm(event){
     // The current Apps Script contract still names this field regionOfResidence.
     // Address is passed through that field until the sheet/backend schema is migrated.
     regionOfResidence:document.getElementById("address").value.trim(),
+    officeAvailed:document.getElementById("officeAvailed").value.trim(),
     serviceAvailed:document.getElementById("serviceAvailed").value.trim(),
     cc1:selected("cc1"),cc2:selected("cc2")||"N/A",cc3:selected("cc3")||"N/A",
     suggestions:document.getElementById("suggestions").value.trim(),
@@ -279,6 +377,11 @@ function resetKioskToWelcome(){
   });
   document.getElementById("clientTypePicker").innerHTML='Choose client type <span>⌄</span>';
   document.getElementById("sexPicker").innerHTML='Choose sex <span>⌄</span>';
+  ["officeAvailed","serviceAvailed"].forEach(id=>document.getElementById(id).value="");
+  setBrandedPickerValue("officeAvailedPicker","","▦","Choose an office","Select the office you visited first");
+  setBrandedPickerValue("serviceAvailedPicker","","✓","Choose a service","Select an office above to view its services");
+  document.getElementById("serviceAvailedPicker").disabled=true;
+  document.getElementById("serviceAvailedPicker").classList.add("is-disabled");
   document.getElementById("clientTypePicker").classList.remove("has-value");
   document.getElementById("sexPicker").classList.remove("has-value");
 
@@ -559,6 +662,8 @@ document.addEventListener("DOMContentLoaded",()=>{
   document.getElementById("feedbackBackButton").addEventListener("click",()=>showSurveyPage("sqd"));
   document.getElementById("clientTypePicker").addEventListener("click",()=>openPicker("clientType"));
   document.getElementById("sexPicker").addEventListener("click",()=>openPicker("sex"));
+  document.getElementById("officeAvailedPicker").addEventListener("click",()=>openOfficeServicePicker("officeAvailed"));
+  document.getElementById("serviceAvailedPicker").addEventListener("click",()=>openOfficeServicePicker("serviceAvailed"));
   document.getElementById("closePickerButton").addEventListener("click",()=>document.getElementById("pickerOverlay").hidden=true);
   document.getElementById("pickerOverlay").addEventListener("click",e=>{if(e.target.id==="pickerOverlay")e.currentTarget.hidden=true;});
   renderChoices("cc1Options","cc1",cc1Choices);

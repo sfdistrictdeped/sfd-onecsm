@@ -167,9 +167,23 @@
               <label for="address">Address <span>*</span></label>
               <textarea id="address" rows="2" maxlength="300" placeholder="House No., Street, Barangay, Municipality, Province" required></textarea>
             </div>
-            <div class="form-field">
-              <label for="serviceAvailed">Service Availed <span>*</span></label>
-              <input id="serviceAvailed" type="text" maxlength="300" placeholder="Enter the service you availed" required>
+            <div class="form-field branded-picker-field">
+              <label for="officeAvailedPicker">Office Availed <span>*</span></label>
+              <button type="button" class="picker-button branded-select" id="officeAvailedPicker" data-picker="officeAvailed" aria-haspopup="dialog" aria-controls="pickerOverlay">
+                <span class="select-leading-icon" aria-hidden="true">▦</span>
+                <span class="select-copy"><strong>Choose an office</strong><small>Select the office you visited first</small></span>
+                <span class="select-chevron" aria-hidden="true">⌄</span>
+              </button>
+              <input type="hidden" id="officeAvailed" required>
+            </div>
+            <div class="form-field branded-picker-field">
+              <label for="serviceAvailedPicker">Service Availed <span>*</span></label>
+              <button type="button" class="picker-button branded-select is-disabled" id="serviceAvailedPicker" data-picker="serviceAvailed" aria-haspopup="dialog" aria-controls="pickerOverlay" disabled>
+                <span class="select-leading-icon" aria-hidden="true">✓</span>
+                <span class="select-copy"><strong>Choose a service</strong><small>Select an office above to view its services</small></span>
+                <span class="select-chevron" aria-hidden="true">⌄</span>
+              </button>
+              <input type="hidden" id="serviceAvailed" required>
             </div>
             <div class="form-error" id="clientPageError" role="alert" hidden></div>
             <div class="form-actions page-actions">
